@@ -275,6 +275,9 @@
   owner /var/lib/libvirt/qemu/nvram/*_VARS.fd rwk,
   owner /var/lib/libvirt/qemu/nvram/*_VARS.ms.fd rwk,
 
+  # Temporary screendump rule -- See bsc#904426
+  /var/cache/libvirt/qemu/qemu.screendump.* rw,
+
 @BEGIN_APPARMOR_3@
   include if exists <abstractions/libvirt-qemu.d>
 @END_APPARMOR_3@
