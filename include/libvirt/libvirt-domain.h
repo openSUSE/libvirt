@@ -1367,6 +1367,31 @@ typedef enum {
  */
 # define VIR_MIGRATE_PARAM_TLS_DESTINATION          "tls.destination"
 
+/**
+ * VIR_MIGRATE_PARAM_SUSE_MAX_ITERS:
+ *
+ * virDomainMigrate* params field: xc_domain_save max_iters
+ *
+ * Since: 1.2.5
+ */
+# define VIR_MIGRATE_PARAM_SUSE_MAX_ITERS     "max_iters"
+/**
+ * VIR_MIGRATE_PARAM_SUSE_MIN_REMAINING:
+ *
+ * virDomainMigrate* params field: xc_domain_save min_remaining
+ *
+ * Since: 1.2.5
+ */
+# define VIR_MIGRATE_PARAM_SUSE_MIN_REMAINING "min_remaining"
+/**
+ * VIR_MIGRATE_PARAM_SUSE_ABORT_IF_BUSY:
+ *
+ * virDomainMigrate* params field: xc_domain_save abort_if_busy
+ *
+ * Since: 1.2.5
+ */
+# define VIR_MIGRATE_PARAM_SUSE_ABORT_IF_BUSY "abort_if_busy"
+
 /* Domain migration. */
 virDomainPtr virDomainMigrate (virDomainPtr domain, virConnectPtr dconn,
                                unsigned long flags, const char *dname,

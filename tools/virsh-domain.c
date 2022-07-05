@@ -11041,6 +11041,18 @@ static const vshCmdOptDef opts_migrate[] = {
      .completer = virshCompleteEmpty,
      .help = N_("override the destination host name used for TLS verification")
     },
+    {.name = "max_iters",
+     .type = VSH_OT_INT,
+     .help = N_("SUSE libxl: Number of iterations before final suspend (default: 2).")
+    },
+    {.name = "min_remaining",
+     .type = VSH_OT_INT,
+     .help = N_("SUSE libxl: Number of dirty pages before final suspend (default: 50).")
+    },
+    {.name = "abort_if_busy",
+     .type = VSH_OT_BOOL,
+     .help = N_("SUSE libxl: Abort migration instead of doing final suspend.")
+    },
     {.name = NULL}
 };
 
@@ -11061,6 +11073,7 @@ doMigrate(void *opaque)
     unsigned long long ullOpt = 0;
     int rv;
     virConnectPtr dconn = data->dconn;
+    unsigned int uint_opt = 0;
 #ifndef WIN32
     sigset_t sigmask, oldsigmask;
 
@@ -11188,6 +11201,22 @@ doMigrate(void *opaque)
         if (virTypedParamsAddULLong(&params, &nparams, &maxparams,
                                     VIR_MIGRATE_PARAM_COMPRESSION_XBZRLE_CACHE,
                                     ullOpt) < 0)
+            goto save_error;
+    }
+
+    if (vshCommandOptUInt(ctl, cmd, "max_iters", &uint_opt) > 0 && uint_opt) {
+        if (virTypedParamsAddUInt(&params, &nparams, &maxparams,
+                                VIR_MIGRATE_PARAM_SUSE_MAX_ITERS, uint_opt) < 0)
+            goto save_error;
+    }
+    if (vshCommandOptUInt(ctl, cmd, "min_remaining", &uint_opt) > 0 && uint_opt) {
+        if (virTypedParamsAddUInt(&params, &nparams, &maxparams,
+                                VIR_MIGRATE_PARAM_SUSE_MIN_REMAINING, uint_opt) < 0)
+            goto save_error;
+    }
+    if (vshCommandOptBool(cmd, "abort_if_busy")) {
+        if (virTypedParamsAddUInt(&params, &nparams, &maxparams,
+                                VIR_MIGRATE_PARAM_SUSE_ABORT_IF_BUSY, 1) < 0)
             goto save_error;
     }
 

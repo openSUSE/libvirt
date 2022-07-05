@@ -35,6 +35,9 @@
     VIR_MIGRATE_PARAM_URI,              VIR_TYPED_PARAM_STRING, \
     VIR_MIGRATE_PARAM_DEST_NAME,        VIR_TYPED_PARAM_STRING, \
     VIR_MIGRATE_PARAM_DEST_XML,         VIR_TYPED_PARAM_STRING, \
+    VIR_MIGRATE_PARAM_SUSE_MAX_ITERS,   VIR_TYPED_PARAM_UINT, \
+    VIR_MIGRATE_PARAM_SUSE_MIN_REMAINING, VIR_TYPED_PARAM_UINT, \
+    VIR_MIGRATE_PARAM_SUSE_ABORT_IF_BUSY, VIR_TYPED_PARAM_UINT, \
     NULL
 
 char *
@@ -66,6 +69,13 @@ libxlDomainMigrationDstPrepare(virConnectPtr dconn,
                                int cookieinlen,
                                unsigned int flags);
 
+typedef struct {
+    unsigned int virFlags;
+    unsigned int max_iters;
+    unsigned int min_remaining;
+    unsigned int abort_if_busy;
+} libxlDomainMigrationProps;
+
 int
 libxlDomainMigrationSrcPerformP2P(libxlDriverPrivate *driver,
                                   virDomainObj *vm,
@@ -74,7 +84,7 @@ libxlDomainMigrationSrcPerformP2P(libxlDriverPrivate *driver,
                                   const char *dconnuri,
                                   const char *uri_str,
                                   const char *dname,
-                                  unsigned int flags);
+                                  const libxlDomainMigrationProps *props);
 
 int
 libxlDomainMigrationSrcPerform(libxlDriverPrivate *driver,
@@ -83,7 +93,7 @@ libxlDomainMigrationSrcPerform(libxlDriverPrivate *driver,
                                const char *dconnuri,
                                const char *uri_str,
                                const char *dname,
-                               unsigned int flags);
+                               const libxlDomainMigrationProps *props);
 
 virDomainPtr
 libxlDomainMigrationDstFinish(virConnectPtr dconn,

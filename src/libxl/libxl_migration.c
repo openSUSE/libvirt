@@ -329,18 +329,38 @@ libxlMigrateDstReceive(virNetSocket *sock,
 static int
 libxlDoMigrateSrcSend(libxlDriverPrivate *driver,
                       virDomainObj *vm,
-                      unsigned long flags,
+                      const libxlDomainMigrationProps *props,
                       int sockfd)
 {
     libxlDriverConfig *cfg = libxlDriverConfigGet(driver);
+#ifdef LIBXL_HAVE_DOMAIN_SUSPEND_SUSE
+    libxl_domain_suspend_suse_properties libxl_props = {
+        .flags = 0,
+    };
+#else
     int xl_flags = 0;
+#endif
     int ret;
 
-    if (flags & VIR_MIGRATE_LIVE)
+#ifdef LIBXL_HAVE_DOMAIN_SUSPEND_SUSE
+    if (props->virFlags & VIR_MIGRATE_LIVE)
+        libxl_props.flags |= LIBXL_SUSPEND_LIVE;
+
+    libxl_props.max_iters = props->max_iters;
+    libxl_props.min_remaining = props->min_remaining;
+    if (props->abort_if_busy)
+        libxl_props.flags |= LIBXL_SUSPEND_ABORT_IF_BUSY;
+
+    ret = libxl_domain_suspend_suse(cfg->ctx, vm->def->id, sockfd,
+                                    &libxl_props, NULL);
+#else
+    if (props->virFlags & VIR_MIGRATE_LIVE)
         xl_flags = LIBXL_SUSPEND_LIVE;
 
     ret = libxl_domain_suspend(cfg->ctx, vm->def->id, sockfd,
                                xl_flags, NULL);
+#endif
+
     if (ret != 0) {
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
                        _("Failed to send migration data to destination host"));
@@ -877,7 +897,7 @@ struct libxlTunnelControl {
 static int
 libxlMigrationSrcStartTunnel(libxlDriverPrivate *driver,
                              virDomainObj *vm,
-                             unsigned long flags,
+                             const libxlDomainMigrationProps *props,
                              virStreamPtr st,
                              struct libxlTunnelControl **tnl)
 {
@@ -910,7 +930,7 @@ libxlMigrationSrcStartTunnel(libxlDriverPrivate *driver,
 
     virObjectUnlock(vm);
     /* Send data to pipe */
-    ret = libxlDoMigrateSrcSend(driver, vm, flags, tc->dataFD[1]);
+    ret = libxlDoMigrateSrcSend(driver, vm, props, tc->dataFD[1]);
     virObjectLock(vm);
 
     /* libxlMigrationSrcStopTunnel will be called in libxlDoMigrateSrcP2P
@@ -945,7 +965,7 @@ libxlDoMigrateSrcP2P(libxlDriverPrivate *driver,
                      const char *dconnuri G_GNUC_UNUSED,
                      const char *dname,
                      const char *uri,
-                     unsigned int flags)
+                     const libxlDomainMigrationProps *props)
 {
     virDomainPtr ddomain = NULL;
     virTypedParameterPtr params = NULL;
@@ -990,11 +1010,11 @@ libxlDoMigrateSrcP2P(libxlDriverPrivate *driver,
     /* We don't require the destination to have P2P support
      * as it looks to be normal migration from the receiver perspective.
      */
-    destflags = flags & ~(VIR_MIGRATE_PEER2PEER);
+    destflags = props->virFlags & ~(VIR_MIGRATE_PEER2PEER);
 
     VIR_DEBUG("Prepare3");
     virObjectUnlock(vm);
-    if (flags & VIR_MIGRATE_TUNNELLED) {
+    if (props->virFlags & VIR_MIGRATE_TUNNELLED) {
         if (!(st = virStreamNew(dconn, 0)))
             goto confirm;
         ret = dconn->driver->domainMigratePrepareTunnel3Params
@@ -1008,7 +1028,7 @@ libxlDoMigrateSrcP2P(libxlDriverPrivate *driver,
     if (ret == -1)
         goto confirm;
 
-    if (!(flags & VIR_MIGRATE_TUNNELLED)) {
+    if (!(props->virFlags & VIR_MIGRATE_TUNNELLED)) {
         if (uri_out) {
             if (virTypedParamsReplaceString(&params, &nparams,
                                             VIR_MIGRATE_PARAM_URI, uri_out) < 0) {
@@ -1023,11 +1043,11 @@ libxlDoMigrateSrcP2P(libxlDriverPrivate *driver,
     }
 
     VIR_DEBUG("Perform3 uri=%s", NULLSTR(uri_out));
-    if (flags & VIR_MIGRATE_TUNNELLED)
-        ret = libxlMigrationSrcStartTunnel(driver, vm, flags, st, &tc);
+    if (props->virFlags & VIR_MIGRATE_TUNNELLED)
+        ret = libxlMigrationSrcStartTunnel(driver, vm, props, st, &tc);
     else
         ret = libxlDomainMigrationSrcPerform(driver, vm, NULL, NULL,
-                                             uri_out, NULL, flags);
+                                             uri_out, NULL, props);
     if (ret < 0) {
         notify_source = false;
         virErrorPreserveLast(&orig_err);
@@ -1062,7 +1082,7 @@ libxlDoMigrateSrcP2P(libxlDriverPrivate *driver,
  confirm:
     if (notify_source) {
         VIR_DEBUG("Confirm3 cancelled=%d vm=%p", cancelled, vm);
-        ret = libxlDomainMigrationSrcConfirm(driver, vm, flags, cancelled);
+        ret = libxlDomainMigrationSrcConfirm(driver, vm, props->virFlags, cancelled);
 
         if (ret < 0)
             VIR_WARN("Guest %s probably left in 'paused' state on source",
@@ -1070,7 +1090,7 @@ libxlDoMigrateSrcP2P(libxlDriverPrivate *driver,
     }
 
  cleanup:
-    if (flags & VIR_MIGRATE_TUNNELLED) {
+    if (props->virFlags & VIR_MIGRATE_TUNNELLED) {
         libxlMigrationSrcStopTunnel(tc);
         virObjectUnref(st);
     }
@@ -1114,7 +1134,7 @@ libxlDomainMigrationSrcPerformP2P(libxlDriverPrivate *driver,
                                   const char *dconnuri,
                                   const char *uri_str G_GNUC_UNUSED,
                                   const char *dname,
-                                  unsigned int flags)
+                                  const libxlDomainMigrationProps *props)
 {
     int ret = -1;
     int useParams;
@@ -1148,7 +1168,7 @@ libxlDomainMigrationSrcPerformP2P(libxlDriverPrivate *driver,
     }
 
     ret = libxlDoMigrateSrcP2P(driver, vm, sconn, xmlin, dconn, dconnuri,
-                               dname, uri_str, flags);
+                               dname, uri_str, props);
 
     if (ret < 0) {
         /*
@@ -1175,7 +1195,7 @@ libxlDomainMigrationSrcPerform(libxlDriverPrivate *driver,
                                const char *dconnuri G_GNUC_UNUSED,
                                const char *uri_str,
                                const char *dname G_GNUC_UNUSED,
-                               unsigned int flags)
+                               const libxlDomainMigrationProps *props)
 {
     libxlDomainObjPrivate *priv = vm->privateData;
     char *hostname = NULL;
@@ -1211,7 +1231,7 @@ libxlDomainMigrationSrcPerform(libxlDriverPrivate *driver,
 
     /* suspend vm and send saved data to dst through socket fd */
     virObjectUnlock(vm);
-    ret = libxlDoMigrateSrcSend(driver, vm, flags, sockfd);
+    ret = libxlDoMigrateSrcSend(driver, vm, props, sockfd);
     virObjectLock(vm);
 
     if (ret == 0) {

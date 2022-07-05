@@ -5996,6 +5996,9 @@ libxlDomainMigratePerform3Params(virDomainPtr dom,
     const char *dname = NULL;
     const char *uri = NULL;
     int ret = -1;
+    libxlDomainMigrationProps props = {
+        .virFlags = flags,
+    };
 
 #ifdef LIBXL_HAVE_NO_SUSPEND_RESUME
     virReportUnsupportedError();
@@ -6012,6 +6015,15 @@ libxlDomainMigratePerform3Params(virDomainPtr dom,
         virTypedParamsGetString(params, nparams,
                                 VIR_MIGRATE_PARAM_DEST_NAME,
                                 &dname) < 0 ||
+        virTypedParamsGetUInt(params, nparams,
+                                VIR_MIGRATE_PARAM_SUSE_MAX_ITERS,
+                                &props.max_iters) < 0 ||
+        virTypedParamsGetUInt(params, nparams,
+                                VIR_MIGRATE_PARAM_SUSE_MIN_REMAINING,
+                                &props.min_remaining) < 0 ||
+        virTypedParamsGetUInt(params, nparams,
+                                VIR_MIGRATE_PARAM_SUSE_ABORT_IF_BUSY,
+                                &props.abort_if_busy) < 0 ||
         virTypedParamsGetString(params, nparams,
                                 VIR_MIGRATE_PARAM_URI,
                                 &uri) < 0)
@@ -6026,11 +6038,11 @@ libxlDomainMigratePerform3Params(virDomainPtr dom,
 
     if ((flags & (VIR_MIGRATE_TUNNELLED | VIR_MIGRATE_PEER2PEER))) {
         if (libxlDomainMigrationSrcPerformP2P(driver, vm, dom->conn, dom_xml,
-                                              dconnuri, uri, dname, flags) < 0)
+                                              dconnuri, uri, dname, &props) < 0)
             goto cleanup;
     } else {
         if (libxlDomainMigrationSrcPerform(driver, vm, dom_xml, dconnuri,
-                                           uri, dname, flags) < 0)
+                                           uri, dname, &props) < 0)
             goto cleanup;
     }
 

@@ -3337,6 +3337,7 @@ migrate
       [--parallel [--parallel-connections connections]]
       [--bandwidth bandwidth] [--tls-destination hostname]
       [--disks-uri URI] [--copy-storage-synchronous-writes]
+      [--max_iters num] [--min_remaining num] [--abort_if_busy]
 
 Migrate domain to another host.  Add *--live* for live migration; <--p2p>
 for peer-2-peer migration; *--direct* for direct migration; or *--tunnelled*
@@ -3462,6 +3463,12 @@ parallel connections. The number of such connections can be set using
 *--parallel-connections*. Parallel connections may help with saturating the
 network link between the source and the target and thus speeding up the
 migration.
+
+SUSE-specific options for Xen: *--max_iters* allows specifying the maximum
+number of iterations before final suspend. Default is 2.  *--min_remaining*
+allows specifying the number of dirty pages before final suspend. Default is 50.
+*--abort_if_busy* can be used to abort the migration instead of doing the final
+suspend for domUs with busy workloads, to avoid a long suspend-time of the domU.
 
 Running migration can be canceled by interrupting virsh (usually using
 ``Ctrl-C``) or by ``domjobabort`` command sent from another virsh instance.
