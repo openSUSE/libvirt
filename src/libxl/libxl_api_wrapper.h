@@ -211,3 +211,18 @@ libxlSetMemoryTargetWrapper(libxl_ctx *ctx,
 
     return ret;
 }
+
+static inline int
+libxlQemuMonitorCommandWrapper(libxl_ctx *ctx, uint32_t domid,
+                               const char *command_line, char **output)
+{
+    int ret;
+
+#if LIBXL_API_VERSION < 0x041300
+    ret = libxl_qemu_monitor_command(ctx, domid, command_line, output);
+#else
+    ret = libxl_qemu_monitor_command(ctx, domid, command_line, output, NULL);
+#endif
+
+    return ret;
+}
