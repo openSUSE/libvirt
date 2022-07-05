@@ -3592,6 +3592,7 @@ lxcDomainAttachDeviceNetLive(virLXCDriver *driver,
         case VIR_DOMAIN_NET_TYPE_NETWORK:
         case VIR_DOMAIN_NET_TYPE_ETHERNET:
             ignore_value(virNetDevVethDelete(veth));
+            virWaitForDevices();
             break;
 
         case VIR_DOMAIN_NET_TYPE_DIRECT:
@@ -4065,6 +4066,7 @@ lxcDomainDetachDeviceNetLive(virDomainObj *vm,
             virDomainAuditNet(vm, detach, NULL, "detach", false);
             goto cleanup;
         }
+        virWaitForDevices();
         break;
 
         /* It'd be nice to support this, but with macvlan
