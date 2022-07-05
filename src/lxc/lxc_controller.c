@@ -2003,6 +2003,7 @@ static int virLXCControllerDeleteInterfaces(virLXCController *ctrl)
         if (virNetDevVethDelete(ctrl->veths[i]) < 0)
             ret = -1;
     }
+    virWaitForDevices();
 
     return ret;
 }
