@@ -1888,7 +1888,7 @@ libxlDriverConfigNew(void)
     cfg->firmwares = g_new0(virFirmware *, 1);
     cfg->nfirmwares = 1;
     cfg->firmwares[0] = g_new0(virFirmware, 1);
-    cfg->firmwares[0]->name = g_strdup(LIBXL_FIRMWARE_DIR "/ovmf.bin");
+    cfg->firmwares[0]->name = g_strdup(DATADIR "/qemu/ovmf-x86_64-xen-4m.bin");
 #endif
 
     /* Always add hvmloader to firmwares */
