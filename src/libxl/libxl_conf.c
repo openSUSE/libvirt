@@ -1837,15 +1837,12 @@ libxlMakeBuildInfoVfb(virPortAllocatorRange *graphicsports,
 /*
  * Get domain0 autoballoon configuration.  Honor user-specified
  * setting in libxl.conf first.  If not specified, autoballooning
- * is disabled when domain0's memory is set with 'dom0_mem'.
- * Otherwise autoballooning is enabled.
+ * is disabled.
  */
 static int
 libxlGetAutoballoonConf(libxlDriverConfig *cfg,
                         virConf *conf)
 {
-    g_autoptr(GRegex) regex = NULL;
-    g_autoptr(GError) err = NULL;
     int res;
 
     res = virConfGetValueBool(conf, "autoballoon", &cfg->autoballoon);
@@ -1854,15 +1851,8 @@ libxlGetAutoballoonConf(libxlDriverConfig *cfg,
     else if (res == 1)
         return 0;
 
-    regex = g_regex_new("(^| )dom0_mem=((|min:|max:)[0-9]+[bBkKmMgG]?,?)+($| )",
-                        0, 0, &err);
-    if (!regex) {
-        virReportError(VIR_ERR_INTERNAL_ERROR,
-                       _("Failed to compile regex %1$s"), err->message);
-        return -1;
-    }
-
-    cfg->autoballoon = !g_regex_match(regex, cfg->verInfo->commandline, 0, NULL);
+    /* make it explicit */
+    cfg->autoballoon = 0;
     return 0;
 }
 
