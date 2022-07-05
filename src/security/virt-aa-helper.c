@@ -483,6 +483,7 @@ valid_path(const char *path, const bool readonly)
         "/usr/share/qemu-efi-aarch64/",      /* for AAVMF images */
         "/usr/lib/u-boot/",                  /* u-boot loaders for qemu */
         "/usr/lib/riscv64-linux-gnu/opensbi" /* RISC-V SBI implementation */
+        "/usr/share/qemu/"                   /* SUSE path for OVMF and AAVMF images */
     };
     /* override the above with these */
     const char * const override[] = {
