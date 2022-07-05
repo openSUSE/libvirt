@@ -30,8 +30,15 @@ interfaceRegister(void)
     if (netcfIfaceRegister() == 0)
         return 0;
 #endif /* WITH_NETCF */
+#ifdef WITH_NETCONTROL
+    /* Attempt to load the netcontrol based backend, which is a slightly
+       patched netcf backend */
+    if (netcfIfaceRegister() == 0)
+        return 0;
+#endif /* WITH_NETCONTROL */
 #if WITH_UDEV
-    /* If there's no netcf or it failed to load, register the udev backend */
+    /* If there's no netcf or netcontrol, or it failed to load, register the
+       udev backend */
     if (udevIfaceRegister() == 0)
         return 0;
 #endif /* WITH_UDEV */
