@@ -538,6 +538,8 @@ virshShowVersion(vshControl *ctl G_GNUC_UNUSED)
     vshPrint(ctl, " Interface");
 # if defined(WITH_NETCF)
     vshPrint(ctl, " netcf");
+# elif defined(WITH_NETCONTROL)
+    vshPrint(ctl, " netcontrol");
 # elif defined(WITH_UDEV)
     vshPrint(ctl, " udev");
 # endif
