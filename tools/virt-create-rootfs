@@ -1,0 +1,236 @@
+#!/bin/sh
+set -e
+
+function fail
+{
+    echo $1
+    exit 1
+}
+
+function print_help
+{
+cat << EOF
+virt-create-rootfs --root /path/to/rootfs [ARGS]
+
+Create a new root file system to use for distribution containers.
+
+ARGUMENTS
+
+    -h, --help          print this help and exit
+    -r, --root          path where to create the root FS
+    -d, --distro        distribution to install
+    -a, --arch          target architecture
+    -u, --url           URL of the registration server
+    -c, --regcode       registration code for the product
+    --dry-run           don't actually run it
+EOF
+}
+
+ARCH=$(uname -i)
+ROOT=
+DISTRO=
+URL=
+REG_CODE=
+DRY_RUN=
+
+while test $# -gt 0
+do
+    case $1 in
+
+    -h | --help)
+        # usage and help
+        print_help
+        ;;
+
+    -r | --root)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        ROOT="$2"
+        shift
+        ;;
+
+    -a | --arch)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        case "$2" in
+            i586 | x86_64)
+                ARCH=$2
+                shift
+                ;;
+            *)
+                fail "$1 valid values are 'i586', 'x86_64'"
+        esac
+        # Sanity checks for the arch
+        HOST_ARCH=$(uname -i)
+        case "$HOST_ARCH" in
+            i?86)
+                if test $ARCH = "x86_64"; then
+                    fail "Host won't run x86_64 container"
+                fi
+            ;;
+        esac
+        ;;
+
+    -u | --url)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        URL="$2"
+        shift
+        ;;
+
+    -d | --distro)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        case "$2" in
+            SLED-* | SLES-* | openSUSE-*)
+                DISTRO=$2
+                shift
+                ;;
+            *)
+                fail "$1 valid values are 'SLED-*', 'SLES-*', 'openSUSE-*'"
+        esac
+        ;;
+
+    -c | --regcode)
+        if test $# -lt 2; then
+            fail "$1 needs a value"
+        fi
+        REG_CODE=$2
+        shift
+        ;;
+
+    --dry-run)
+        DRY_RUN="yes"
+        ;;
+
+    *)
+        fail "Unknown option: $1"
+        ;;
+    esac
+
+    shift
+done
+
+if test -z "$ROOT"; then
+    fail "--root argument need to be provided"
+fi
+
+RUN=
+if test "$DRY_RUN" = "yes"; then
+    RUN="echo"
+fi
+
+function call_zypper
+{
+    $RUN zypper --root "$ROOT" $*
+}
+
+function install_sle
+{
+    PRODUCT="$1"
+    TARGET_VERSION="$2"
+
+    case "$TARGET_VERSION" in
+        12.0)
+            # Transform into zypper internal version scheme
+            TARGET_VERSION="12"
+            ;;
+        15.0)
+            TARGET_VERSION="15"
+            ;;
+        12.*|15.*)
+            ;;
+        *)
+            fail "Unhandled SLE version: $TARGET_VERSION"
+            ;;
+    esac
+
+    # Depending on the distro we run, we may have some preliminary things to do
+    . /etc/os-release
+    case "$VERSION_ID" in
+        15*)
+            # on SLE 15 we need to symlink the two path to the RPM DB or the GPG
+            # key won't be found.
+            mkdir -p "$ROOT/usr/lib/sysimage/rpm"
+            mkdir -p "$ROOT/var/lib"
+            ln -s ../../usr/lib/sysimage/rpm "$ROOT/var/lib"
+            ;;
+    esac
+
+    # First copy the SUSE GPG keys from the host to the new root
+    rpm -qa gpg-pubkey\* --qf "%{name}-%{version}-%{release}: %{summary}\n" | \
+    grep 'gpg(SuSE Package Signing Key <build@suse.de>)' | \
+    while read -r line; do
+        key=$(echo $line | cut -d ':' -f 1)
+        tmpkey=$(mktemp)
+        rpm -qi $key | sed -n '/BEGIN/,/END/p' > "$tmpkey"
+        rpm --root "$ROOT" --import "$tmpkey"
+        rm "$tmpkey"
+    done
+
+    # SUSE Connect adds the repositories, and refreshes them,
+    # but requires the GPG key to be already imported
+    CONNECT_ARGS=
+    if test -n "$REG_CODE"; then
+        CONNECT_ARGS="$CONNECT_ARGS -r $REG_CODE"
+    fi
+    if test -n "$URL"; then
+        CONNECT_ARGS="$CONNECT_ARGS --url $URL"
+    fi
+
+    PATTERN=Minimal
+    case "$TARGET_VERSION" in
+        12*)
+            $RUN SUSEConnect -p "$PRODUCT/$TARGET_VERSION/$ARCH" --root "$ROOT" $CONNECT_ARGS
+            ;;
+        15*)
+            # Due to SLE 15 modules we need to add the product first, let it fail,
+            # add the basesystem
+            set +e
+            $RUN SUSEConnect -p "$PRODUCT/$TARGET_VERSION/$ARCH" --root "$ROOT" $CONNECT_ARGS
+            set -e
+            $RUN SUSEConnect -p "sle-module-basesystem/$TARGET_VERSION/$ARCH" --root "$ROOT" $CONNECT_ARGS
+            PATTERN=base
+            ;;
+    esac
+
+    # Then we install what we need
+    call_zypper -n in --auto-agree-with-licenses -t pattern $PATTERN
+
+    # Create the baseproduct symlink if missing
+    if ! test -e "$ROOT/etc/products.d/baseproduct"; then
+        ln -s $PRODUCT.prod "$ROOT/etc/products.d/baseproduct"
+    fi
+}
+
+case "$DISTRO" in
+    SLED-*)
+        install_sle "SLED" "${DISTRO:5}"
+        ;;
+    SLED-* | SLES-*)
+        install_sle "SLES" "${DISTRO:5}"
+        ;;
+
+    openSUSE-*)
+        TARGET_VERSION=${DISTRO:9}
+        if test $TARGET_VERSION = "tumbleweed"; then
+            REPO="https://download.opensuse.org/tumbleweed/repo/oss/"
+            call_zypper ar "$REPO" "openSUSE"
+        else
+            REPO="https://download.opensuse.org/distribution/leap/$TARGET_VERSION/repo/oss/"
+            UPDATE_REPO="https://download.opensuse.org/update/leap/$TARGET_VERSION/oss/"
+            call_zypper ar "$REPO" "openSUSE"
+            call_zypper ar "$UPDATE_REPO" "openSUSE-udpate"
+        fi
+        call_zypper in --no-recommends -t pattern base
+        ;;
+esac
+
+if test "$DRY_RUN" != "yes"; then
+    echo "pts/0" >> "$ROOT/etc/securetty"
+    chroot "$ROOT" /usr/bin/passwd
+fi

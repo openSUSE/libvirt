@@ -154,6 +154,8 @@ else
   virsh_icon_res = []
 endif
 
+install_data('virt-create-rootfs', install_dir: bindir, install_mode: 'rwxr-xr-x',)
+
 executable(
   'virsh',
   [
