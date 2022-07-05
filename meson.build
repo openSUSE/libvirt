@@ -1125,6 +1125,12 @@ else
   netcf_dep = dependency('', required: false)
 endif
 
+netcontrol_version = '0.2.0'
+netcontrol_dep = dependency('netcontrol', version: '>=' + netcontrol_version, required: get_option('netcontrol'))
+if netcontrol_dep.found()
+  conf.set('WITH_NETCONTROL', 1)
+endif
+
 have_gnu_gettext_tools = false
 if not get_option('nls').disabled()
   have_gettext = cc.has_function('gettext')
@@ -1506,10 +1512,10 @@ elif get_option('driver_hyperv').enabled()
   error('openwsman is required for the Hyper-V driver')
 endif
 
-if not get_option('driver_interface').disabled() and conf.has('WITH_LIBVIRTD') and (udev_dep.found() or conf.has('WITH_NETCF'))
+if not get_option('driver_interface').disabled() and conf.has('WITH_LIBVIRTD') and (udev_dep.found() or conf.has('WITH_NETCF') or netcontrol_dep.found())
   conf.set('WITH_INTERFACE', 1)
 elif get_option('driver_interface').enabled()
-  error('Requested the Interface driver without netcf or udev and libvirtd support')
+  error('Requested the Interface driver without netcf, netcontrol or udev and libvirtd support')
 endif
 
 if not get_option('driver_libxl').disabled() and conf.has('WITH_LIBVIRTD')
@@ -2290,6 +2296,7 @@ libs_summary = {
   'libssh2': libssh2_dep,
   'libutil': libutil_dep,
   'netcf': netcf_dep,
+  'netcontrol': netcontrol_dep,
   'NLS': have_gnu_gettext_tools,
   'numactl': numactl_dep,
   'openwsman': openwsman_dep,
