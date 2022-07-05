@@ -95,7 +95,7 @@ daemonConfigNew(bool privileged G_GNUC_UNUSED)
 
 #ifdef WITH_IP
 # ifdef LIBVIRTD
-    data->listen_tls = true; /* Only honoured if --listen is set */
+    data->listen_tls = false; /* Only honoured if --listen is set */
 # else /* ! LIBVIRTD */
     data->listen_tls = false; /* Always honoured, --listen doesn't exist. */
 # endif /* ! LIBVIRTD */
