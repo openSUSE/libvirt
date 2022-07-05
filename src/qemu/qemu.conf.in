@@ -510,13 +510,13 @@
 #remote_websocket_port_max = 65535
 
 
-# The default security driver is SELinux. If SELinux is disabled
-# on the host, then the security driver will automatically disable
-# itself. If you wish to disable QEMU SELinux security driver while
-# leaving SELinux enabled for the host in general, then set this
-# to 'none' instead. It's also possible to use more than one security
-# driver at the same time, for this use a list of names separated by
-# comma and delimited by square brackets. For example:
+# Depending on which security framework is enabled on the host, either
+# the SELinux or Apparmor security driver is enabled when the qemu
+# driver is loaded. If you wish to disable a QEMU security driver while
+# leaving the security framework enabled for the host in general, then
+# set this to 'none' instead. It's also possible to use more than one
+# security driver at the same time, for this use a list of names
+# separated by comma and delimited by square brackets. For example:
 #
 #       security_driver = [ "selinux", "apparmor" ]
 #
@@ -530,8 +530,15 @@
 
 # If set to non-zero, then the default security labeling
 # will make guests confined. If set to zero, then guests
-# will be unconfined by default. Defaults to 1.
-#security_default_confined = 1
+# will be unconfined by default. Defaults to 0.
+#
+# SUSE Note:
+# Default confinement of guests has historically been disabled in SUSE
+# distros. This is still the case, but future releases may switch to
+# confining guests by default. Change this to a non-zero value to enable
+# default confinement of guests.
+#
+#security_default_confined = 0
 
 
 # If set to non-zero, then attempts to create unconfined
@@ -896,11 +903,22 @@
 #relaxed_acs_check = 1
 
 
-# In order to prevent accidentally starting two domains that
-# share one writable disk, libvirt offers two approaches for
-# locking files. The first one is sanlock, the other one,
-# virtlockd, is then our own implementation. Accepted values
-# are "sanlock" and "lockd".
+# SUSE note:
+# Two lock managers are supported: lockd and sanlock.  lockd, which
+# is provided by the virtlockd service, uses advisory locks (flock(2))
+# to protect virtual machine disks.  sanlock uses the notion of leases
+# to protect virtual machine disks and is more appropriate in a SAN
+# environment.
+#
+# For most deployments that require virtual machine disk protection,
+# lockd is recommended since it is easy to configure and the virtlockd
+# service can be restarted without terminating any running virtual
+# machines.  sanlock, which may be preferred in some SAN environments,
+# has the disadvantage of not being able to be restarted without
+# first terminating all virtual machines for which it holds leases.
+#
+# Specify lockd or sanlock to enable protection of virtual machine disk
+# content.
 #
 #lock_manager = "lockd"
 
