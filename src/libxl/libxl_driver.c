@@ -5408,6 +5408,95 @@ libxlDomainMemoryStats(virDomainPtr dom,
 
 #undef LIBXL_SET_MEMSTAT
 
+/**
+ * Resize a block device while a guest is running. Resize to a lower size
+ * is supported, but should be used with extreme caution.  Note that it
+ * only supports to resize image files, it can't resize block devices
+ * like LVM volumes.
+ */
+static int
+libxlDomainBlockResize(virDomainPtr dom,
+                       const char *path,
+                       unsigned long long size,
+                       unsigned int flags)
+{
+    libxlDriverPrivate *driver = dom->conn->privateData;
+    libxlDriverConfig *cfg;
+    virDomainObj *vm;
+    int ret = -1;
+    virDomainDiskDef *disk = NULL;
+    g_autofree char *moncmd = NULL;
+    g_autofree char *monreply = NULL;
+
+    virCheckFlags(VIR_DOMAIN_BLOCK_RESIZE_BYTES, -1);
+
+    if (path[0] == '\0') {
+        virReportError(VIR_ERR_INVALID_ARG,
+                       "%s", _("empty path"));
+        return -1;
+    }
+
+    /* We prefer operating on bytes.  */
+    if ((flags & VIR_DOMAIN_BLOCK_RESIZE_BYTES) == 0) {
+        if (size > ULLONG_MAX / 1024) {
+            virReportError(VIR_ERR_OVERFLOW,
+                           _("size must be less than %1$llu"),
+                           ULLONG_MAX / 1024);
+            return -1;
+        }
+        size *= 1024;
+    }
+
+    cfg = libxlDriverConfigGet(driver);
+    if (!(vm = libxlDomObjFromDomain(dom)))
+        goto cleanup;
+
+    if (virDomainBlockResizeEnsureACL(dom->conn, vm->def) < 0)
+        goto cleanup;
+
+    if (virDomainObjBeginJob(vm, VIR_JOB_MODIFY) < 0)
+        goto cleanup;
+
+    if (!virDomainObjIsActive(vm)) {
+        virReportError(VIR_ERR_OPERATION_INVALID,
+                       "%s", _("domain is not running"));
+        goto endjob;
+    }
+
+    if (!(disk = virDomainDiskByName(vm->def, path, false))) {
+        virReportError(VIR_ERR_INVALID_ARG,
+                       _("invalid path: %1$s"), path);
+        goto endjob;
+    }
+
+    /* qcow2 and qed must be sized on 512 byte blocks/sectors,
+     * so adjust size if necessary to round up.
+     */
+    if (disk->src->format == VIR_STORAGE_FILE_QCOW2 ||
+        disk->src->format == VIR_STORAGE_FILE_QED)
+        size = VIR_ROUND_UP(size, 512);
+
+    moncmd = g_strdup_printf("block_resize %s %lluB", disk->dst, size);
+
+    if (libxlQemuMonitorCommandWrapper(cfg->ctx, vm->def->id,
+                                       moncmd, &monreply) != 0) {
+        virReportError(VIR_ERR_OPERATION_FAILED,
+                       _("block_resize command failed for device '%1$s' on domain '%2$d'"),
+                       disk->dst, vm->def->id);
+        goto endjob;
+    }
+
+    ret = 0;
+
+ endjob:
+    virDomainObjEndJob(vm);
+
+ cleanup:
+    virDomainObjEndAPI(&vm);
+    virObjectUnref(cfg);
+    return ret;
+}
+
 static int
 libxlDomainGetJobInfo(virDomainPtr dom,
                       virDomainJobInfoPtr info)
@@ -6723,6 +6812,7 @@ static virHypervisorDriver libxlHypervisorDriver = {
     .domainGetNumaParameters = libxlDomainGetNumaParameters, /* 1.1.1 */
     .nodeGetFreeMemory = libxlNodeGetFreeMemory, /* 0.9.0 */
     .nodeGetCellsFreeMemory = libxlNodeGetCellsFreeMemory, /* 1.1.1 */
+    .domainBlockResize = libxlDomainBlockResize, /* 4.2.0 */
     .domainGetJobInfo = libxlDomainGetJobInfo, /* 1.3.1 */
     .domainGetJobStats = libxlDomainGetJobStats, /* 1.3.1 */
     .domainMemoryStats = libxlDomainMemoryStats, /* 1.3.0 */
