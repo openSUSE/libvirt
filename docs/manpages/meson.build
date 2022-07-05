@@ -21,6 +21,7 @@ docs_man_files = [
   { 'name': 'virt-qemu-qmp-proxy', 'section': '1', 'install': conf.has('WITH_QEMU') },
   { 'name': 'virt-xml-validate', 'section': '1', 'install': true },
   { 'name': 'virt-qemu-sev-validate', 'section': '1', 'install': conf.has('WITH_QEMU') },
+  { 'name': 'virt-create-rootfs', 'section': '1', 'install': conf.has('WITH_LXC') },
 
   { 'name': 'libvirt-guests', 'section': '8', 'install': conf.has('WITH_LIBVIRTD') },
   { 'name': 'libvirtd', 'section': '8', 'install': conf.has('WITH_LIBVIRTD') },
