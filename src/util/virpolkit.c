@@ -235,6 +235,9 @@ virPolkitAgentAvailable(void)
     const char *termid = ctermid(NULL);
     VIR_AUTOCLOSE fd = -1;
 
+    if (!isatty(STDIN_FILENO))
+        return false;
+
     if (!virFileIsExecutable(PKTTYAGENT))
         return false;
 
