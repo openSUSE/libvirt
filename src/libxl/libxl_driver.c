@@ -1351,6 +1351,63 @@ libxlDomainReboot(virDomainPtr dom, unsigned int flags)
 }
 
 static int
+libxlDomainReset(virDomainPtr dom, unsigned int flags)
+{
+    libxlDriverPrivate *driver = dom->conn->privateData;
+    libxlDriverConfig *cfg = libxlDriverConfigGet(driver);
+    virDomainObj *vm;
+    int ret = -1;
+
+    virCheckFlags(0, -1);
+
+    if (!(vm = libxlDomObjFromDomain(dom)))
+        goto cleanup;
+
+    LIBXL_CHECK_DOM0_GOTO(vm->def->name, cleanup);
+
+    if (virDomainResetEnsureACL(dom->conn, vm->def) < 0)
+        goto cleanup;
+
+    if (virDomainObjBeginJob(vm, VIR_JOB_MODIFY) < 0)
+        goto cleanup;
+
+    if (!virDomainObjIsActive(vm)) {
+        virReportError(VIR_ERR_OPERATION_INVALID,
+                       "%s", _("Domain is not running"));
+        goto endjob;
+    }
+
+    /*
+     * The semantics of reset can be achieved by forcibly destroying
+     * the domain and starting it again.
+     */
+    if (libxl_domain_destroy(cfg->ctx, vm->def->id, NULL) < 0) {
+        virReportError(VIR_ERR_INTERNAL_ERROR,
+                       _("Failed to reset domain '%1$d'"), vm->def->id);
+        goto endjob;
+    }
+
+    libxlDomainCleanup(driver, vm);
+
+    if (libxlDomainStartNew(driver, vm, false) < 0) {
+        virReportError(VIR_ERR_INTERNAL_ERROR,
+                       _("Failed to start domain '%1$d' after reset"),
+                       vm->def->id);
+        goto endjob;
+    }
+
+    ret = 0;
+
+ endjob:
+    virDomainObjEndJob(vm);
+
+ cleanup:
+    virDomainObjEndAPI(&vm);
+    virObjectUnref(cfg);
+    return ret;
+}
+
+static int
 libxlDomainDestroyFlags(virDomainPtr dom,
                         unsigned int flags)
 {
@@ -6613,6 +6670,7 @@ static virHypervisorDriver libxlHypervisorDriver = {
     .domainShutdown = libxlDomainShutdown, /* 0.9.0 */
     .domainShutdownFlags = libxlDomainShutdownFlags, /* 0.9.10 */
     .domainReboot = libxlDomainReboot, /* 0.9.0 */
+    .domainReset = libxlDomainReset, /* 1.2.16 */
     .domainDestroy = libxlDomainDestroy, /* 0.9.0 */
     .domainDestroyFlags = libxlDomainDestroyFlags, /* 0.9.4 */
 #ifdef LIBXL_HAVE_DOMAIN_SUSPEND_ONLY
