@@ -1159,7 +1159,14 @@ networkDnsmasqConfDHCP(virBuffer *buf,
     if (VIR_SOCKET_ADDR_IS_FAMILY(&ipdef->address, AF_INET)) {
         if (ipdef->nranges || ipdef->nhosts) {
             networkDnsmasqConfAddKey(buf, "dhcp-no-override");
-            networkDnsmasqConfAddKey(buf, "dhcp-authoritative");
+            /*
+             * Use "dhcp-authoritative" only for dynamic DHCP.
+             * In a static-only network, it would cause dnsmasq
+             * to reply to requests from other hosts than those
+             * statically defined.
+             */
+            if (ipdef->nranges || !ipdef->nhosts)
+                networkDnsmasqConfAddKey(buf, "dhcp-authoritative");
         }
 
         if (ipdef->bootfile) {
