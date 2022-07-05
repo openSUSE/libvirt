@@ -3,7 +3,7 @@ module Test_@DAEMON_NAME@ =
 
    test @DAEMON_NAME_UC@.lns get conf =
 @CUT_ENABLE_IP@
-        { "listen_tls" = "0" }
+        { "listen_tls" = "1" }
         { "listen_tcp" = "1" }
         { "tls_port" = "16514" }
         { "tcp_port" = "16509" }
