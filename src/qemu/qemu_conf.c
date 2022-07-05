@@ -261,7 +261,7 @@ virQEMUDriverConfig *virQEMUDriverConfigNew(bool privileged,
     cfg->slirpHelperName = g_strdup(QEMU_SLIRP_HELPER);
     cfg->dbusDaemonName = g_strdup(QEMU_DBUS_DAEMON);
 
-    cfg->securityDefaultConfined = true;
+    cfg->securityDefaultConfined = false;
     cfg->securityRequireConfined = false;
 
     cfg->keepAliveInterval = 5;
