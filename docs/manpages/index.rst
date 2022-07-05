@@ -45,6 +45,7 @@ Tools
 * `virt-pki-query-dn(1) <virt-pki-query-dn.html>`__ - extract Distinguished Name from a PEM certificate
 * `virt-ssh-helper(8) <virt-ssh-helper.html>`__ - libvirt socket proxy (internal helper tool)
 * `virt-qemu-qmp-proxy(1) <virt-qemu-qmp-proxy.html>`__ - Expose a QMP proxy server for a libvirt QEMU guest
+* `virt-create-rootfs(1) <virt-create-rootfs.html>`__ - tool to create a root file system for distro containers
 
 Key codes
 =========

@@ -164,6 +164,10 @@ else
   virsh_icon_res = []
 endif
 
+if conf.has('WITH_LXC')
+  install_data('virt-create-rootfs', install_dir: bindir, install_mode: 'rwxr-xr-x',)
+endif
+
 virsh_prog = executable(
   'virsh',
   [
