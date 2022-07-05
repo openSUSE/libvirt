@@ -19,8 +19,8 @@
 # It is necessary to setup a CA and issue server certificates before
 # using this capability.
 #
-# This is enabled by default, uncomment this to disable it
-#listen_tls = 0
+# This is disabled by default, uncomment this to enable it
+#listen_tls = 1
 
 # Listen for unencrypted TCP connections on the public TCP/IP port.
 #
