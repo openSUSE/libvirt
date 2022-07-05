@@ -221,6 +221,7 @@ static void virLXCProcessCleanup(virLXCDriver *driver,
                 VIR_WARN("Unable to release network device '%s'", NULLSTR(iface->ifname));
         }
     }
+    virWaitForDevices();
 
     virDomainConfVMNWFilterTeardown(vm);
 
