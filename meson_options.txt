@@ -35,6 +35,7 @@ option('libpcap', type: 'feature', value: 'auto', description: 'libpcap support'
 option('libssh', type: 'feature', value: 'auto', description: 'libssh support')
 option('libssh2', type: 'feature', value: 'auto', description: 'libssh2 support')
 option('netcf', type: 'feature', value: 'auto', description: 'netcf support')
+option('netcontrol', type: 'feature', value: 'auto', description: 'netcontrol support')
 option('nls', type: 'feature', value: 'auto', description: 'nls support')
 option('numactl', type: 'feature', value: 'auto', description: 'numactl support')
 option('openwsman', type: 'feature', value: 'auto', description: 'openwsman support')

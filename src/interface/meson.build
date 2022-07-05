@@ -2,7 +2,7 @@ interface_driver_sources = [
   'interface_driver.c',
 ]
 
-if conf.has('WITH_NETCF')
+if conf.has('WITH_NETCF') or conf.has('WITH_NETCONTROL')
   interface_driver_sources += 'interface_backend_netcf.c'
 endif
 
@@ -23,6 +23,7 @@ if conf.has('WITH_INTERFACE')
       access_dep,
       libnl_dep,
       netcf_dep,
+      netcontrol_dep,
       udev_dep,
     ],
     'link_args': [
