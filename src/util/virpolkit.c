@@ -236,6 +236,9 @@ virPolkitAgentAvailable(void)
     VIR_AUTOCLOSE fd = -1;
     g_autofree char *agent = NULL;
 
+    if (!isatty(STDIN_FILENO))
+        return false;
+
     if (!termid)
         return false;
 
