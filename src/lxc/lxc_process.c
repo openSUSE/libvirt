@@ -50,6 +50,9 @@
 #include "netdev_bandwidth_conf.h"
 #include "virutil.h"
 #include "domain_interface.h"
+#include "virstring.h"
+#include "vircgroupbackend.h"
+#include "virsystemd.h"
 
 #define VIR_FROM_THIS VIR_FROM_LXC
 
@@ -1212,6 +1215,11 @@ int virLXCProcessStart(virLXCDriver * driver,
     int status;
     g_autofree char *pidfile = NULL;
     unsigned int stopFlags = 0;
+    virCgroupBackend **cgroupBackends = virCgroupBackendGetAll();
+    g_autofree char *pidFile = NULL;
+    g_autofree char *pidStr = NULL;
+    g_auto(GStrv) pidList = NULL;
+    pid_t checkPid = 0;
 
     if (virCgroupNewSelf(&selfcgroup) < 0)
         return -1;
@@ -1474,7 +1482,28 @@ int virLXCProcessStart(virLXCDriver * driver,
         goto cleanup;
     }
 
-    priv->machineName = virLXCDomainGetMachineName(vm->def, vm->pid);
+    /* In an environment with hybrid cgroups and systemd the v2 backend is not available.
+     * Systemd however depends on V2 for unit naming. This causes the next two checks to fail.
+     * To work around this issue we retrieve the actual container pid and check on that instead. */
+    if (virSystemdHasMachined() == 0 && cgroupBackends[VIR_CGROUP_BACKEND_TYPE_V2]->available() == false) {
+        pidFile = g_strdup_printf("/proc/%lld/task/%lld/children", (long long int)vm->pid, (long long int)vm->pid);
+        if (virFileReadAll(pidFile, 1024 * 1024, &pidStr) < 0)
+            goto cleanup;
+
+        virTrimSpaces(pidStr, NULL);
+
+        pidList = g_strsplit(pidStr, " ", 2);
+        if (!pidList)
+            goto cleanup;
+
+        if (virStrToLong_i(pidList[0], NULL, 10, &checkPid) < 0)
+            goto cleanup;
+
+    } else {
+        checkPid = vm->pid;
+    }
+
+    priv->machineName = virLXCDomainGetMachineName(vm->def, checkPid);
     if (!priv->machineName)
         goto cleanup;
 
@@ -1483,7 +1512,7 @@ int virLXCProcessStart(virLXCDriver * driver,
      * more reliable way to kill everything off if something
      * goes wrong from here onwards ... */
     if (virCgroupNewDetectMachine(vm->def->name, "lxc",
-                                  vm->pid, -1, priv->machineName,
+                                  checkPid, -1, priv->machineName,
                                   &priv->cgroup) < 0)
         goto cleanup;
 
