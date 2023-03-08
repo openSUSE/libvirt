@@ -1,0 +1,13 @@
+push_workflow:
+  steps:
+    - trigger_services:
+        project: home:jfehlig:gitlab-ci
+        package: libvirt-test
+    - rebuild_package:
+        project: home:jfehlig:gitlab-ci
+        package: libvirt-test
+  filters:
+    event: push
+    branches:
+      only:
+        - v9.0.0-sle15sp5
