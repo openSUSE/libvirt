@@ -1,0 +1,13 @@
+push_workflow:
+  steps:
+    - trigger_services:
+        project: home:jfehlig:gitlab-ci
+        package: libvirt
+    - rebuild_package:
+        project: home:jfehlig:gitlab-ci
+        package: libvirt
+  filters:
+    event: push
+    branches:
+      only:
+        - factory
