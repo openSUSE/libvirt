@@ -1,7 +1,7 @@
 factory-rebuild:
   steps:
     - trigger_services:
-        project: home:jfehlig:gitlab-ci
+        project: home:jfehlig:branches:Virtualization
         package: libvirt
   filters:
     event: push
