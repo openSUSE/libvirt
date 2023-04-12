@@ -8,3 +8,15 @@ factory-rebuild:
     branches:
       only:
         - factory
+
+
+sle15sp5-rebuild:
+  steps:
+    - trigger_services:
+        project: home:jfehlig:gitlab-ci
+        package: libvirt
+  filters:
+    event: push
+    branches:
+      only:
+        - v9.0.0-sle15sp5
