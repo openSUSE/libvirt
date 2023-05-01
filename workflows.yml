@@ -15,6 +15,9 @@ sle15sp5-rebuild:
     - trigger_services:
         project: home:jfehlig:gitlab-ci
         package: libvirt
+   - rebuild_package:
+        project: home:jfehlig:gitlab-ci
+        package: libvirt
   filters:
     event: push
     branches:
