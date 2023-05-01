@@ -15,10 +15,10 @@ sle15sp5-rebuild:
     - trigger_services:
         project: home:jfehlig:gitlab-ci
         package: libvirt
-   - branch_package:
+    - branch_package:
         source_project: home:jfehlig:gitlab-ci
         source_package: libvirt
-	target_project: home:jfehlig:gitlab-ci:workflow-builds
+        target_project: home:jfehlig:gitlab-ci:workflow-builds
   filters:
     event: push
     branches:
