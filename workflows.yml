@@ -18,7 +18,7 @@ sle15sp5-rebuild:
         target_project: home:jfehlig:gitlab-ci:workflow-builds
     - trigger_services:
         project: home:jfehlig:gitlab-ci:workflow-builds
-        package: libvirt
+        package: libvirt-%{SCM_COMMIT_SHA}
   filters:
     event: push
     branches:
