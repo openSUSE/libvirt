@@ -12,13 +12,9 @@ factory-rebuild:
 
 sle15sp5-rebuild:
   steps:
-    - branch_package:
-        source_project: home:jfehlig:gitlab-ci
-        source_package: libvirt
-        target_project: home:jfehlig:gitlab-ci:workflow-builds
     - trigger_services:
-        project: home:jfehlig:gitlab-ci:workflow-builds
-        package: libvirt-%{SCM_COMMIT_SHA}
+        project: home:jfehlig:gitlab-ci
+        package: libvirt
   filters:
     event: push
     branches:
