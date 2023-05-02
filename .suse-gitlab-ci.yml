@@ -4,9 +4,22 @@ variables:
   PACKAGE_WORKSPACE: "/var/tmp"
 
 stages:
+  - build
   - deploy
   - test
 
+
+build_sle15sp5:
+  tags:
+    - sle15sp5
+  stage: build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /.*-sle15sp5/
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /.*-sle15sp5/
+  script:
+    - echo "Starting build stage for SLE15 SP5"
+    - /root/bin/wait-for-publish.sh api.suse.de Devel:Virt:SLE-15-SP5 libvirt SUSE_SLE-15-SP5_Update_standard x86_64
+    - echo "Build stage finished"
 
 deploy_sle15sp5:
   variables:
