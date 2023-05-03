@@ -1,7 +1,7 @@
 factory-rebuild:
   steps:
     - trigger_services:
-        project: Virtualization
+        project: Virtualization:Staging
         package: libvirt
   filters:
     event: push
