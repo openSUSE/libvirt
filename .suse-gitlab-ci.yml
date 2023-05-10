@@ -1,6 +1,5 @@
 variables:
-  GIT_DEPTH: 200
-  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_STRATEGY: none
   PACKAGE_WORKSPACE: "/var/tmp"
 
 stages:
