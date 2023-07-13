@@ -1541,13 +1541,11 @@ fi
 %dir %{_sysconfdir}/apparmor.d/
 %dir %{_sysconfdir}/apparmor.d/abstractions/
 %dir %{_sysconfdir}/apparmor.d/%{name}/
-%dir %{_sysconfdir}/apparmor.d/local/
 %config(noreplace) %{_sysconfdir}/apparmor.d/usr.lib.libvirt.virt-aa-helper
 %config(noreplace) %{_sysconfdir}/apparmor.d/abstractions/libvirt-qemu
 %config(noreplace) %{_sysconfdir}/apparmor.d/abstractions/libvirt-lxc
 %config(noreplace) %{_sysconfdir}/apparmor.d/%{name}/TEMPLATE.lxc
 %config(noreplace) %{_sysconfdir}/apparmor.d/%{name}/TEMPLATE.qemu
-%config(noreplace) %{_sysconfdir}/apparmor.d/local/usr.lib.libvirt.virt-aa-helper
 %{_libexecdir}/virt-aa-helper
 %endif
 %dir %{_prefix}/lib/firewalld/
