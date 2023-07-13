@@ -1497,7 +1497,7 @@ fi
 %{_sbindir}/rclibvirtd
 %config(noreplace) %{_sysconfdir}/%{name}/libvirtd.conf
 %if %{with_apparmor}
-%config %{_sysconfdir}/apparmor.d/usr.sbin.libvirtd
+%config(noreplace) %{_sysconfdir}/apparmor.d/usr.sbin.libvirtd
 %endif
 %{logrotate_prefix} %{logrotate_dir}/libvirtd
 %dir %{_datadir}/augeas/
@@ -1542,11 +1542,11 @@ fi
 %dir %{_sysconfdir}/apparmor.d/abstractions/
 %dir %{_sysconfdir}/apparmor.d/%{name}/
 %dir %{_sysconfdir}/apparmor.d/local/
-%config %{_sysconfdir}/apparmor.d/usr.lib.libvirt.virt-aa-helper
-%config %{_sysconfdir}/apparmor.d/abstractions/libvirt-qemu
-%config %{_sysconfdir}/apparmor.d/abstractions/libvirt-lxc
-%config %{_sysconfdir}/apparmor.d/%{name}/TEMPLATE.lxc
-%config %{_sysconfdir}/apparmor.d/%{name}/TEMPLATE.qemu
+%config(noreplace) %{_sysconfdir}/apparmor.d/usr.lib.libvirt.virt-aa-helper
+%config(noreplace) %{_sysconfdir}/apparmor.d/abstractions/libvirt-qemu
+%config(noreplace) %{_sysconfdir}/apparmor.d/abstractions/libvirt-lxc
+%config(noreplace) %{_sysconfdir}/apparmor.d/%{name}/TEMPLATE.lxc
+%config(noreplace) %{_sysconfdir}/apparmor.d/%{name}/TEMPLATE.qemu
 %config(noreplace) %{_sysconfdir}/apparmor.d/local/usr.lib.libvirt.virt-aa-helper
 %{_libexecdir}/virt-aa-helper
 %endif
@@ -1756,7 +1756,7 @@ fi
 %files daemon-driver-qemu
 %config(noreplace) %{_sysconfdir}/%{name}/virtqemud.conf
 %if %{with_apparmor}
-%config %{_sysconfdir}/apparmor.d/usr.sbin.virtqemud
+%config(noreplace) %{_sysconfdir}/apparmor.d/usr.sbin.virtqemud
 %endif
 %config(noreplace) %{_prefix}/lib/sysctl.d/60-qemu-postcopy-migration.conf
 %{_datadir}/augeas/lenses/virtqemud.aug
@@ -1820,7 +1820,7 @@ fi
 %files daemon-driver-libxl
 %config(noreplace) %{_sysconfdir}/%{name}/virtxend.conf
 %if %{with_apparmor}
-%config %{_sysconfdir}/apparmor.d/usr.sbin.virtxend
+%config(noreplace) %{_sysconfdir}/apparmor.d/usr.sbin.virtxend
 %endif
 %{_datadir}/augeas/lenses/virtxend.aug
 %{_datadir}/augeas/lenses/tests/test_virtxend.aug
