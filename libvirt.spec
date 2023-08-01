@@ -1186,37 +1186,8 @@ VIR_TEST_DEBUG=1 %meson_test -t 5 --no-suite syntax-check
 test -f %{_sysconfdir}/sysconfig/services && \
   test -z "$DISABLE_RESTART_ON_UPDATE" && . %{_sysconfdir}/sysconfig/services
 if test "$DISABLE_RESTART_ON_UPDATE" != yes && \
-  test "$DISABLE_RESTART_ON_UPDATE" != 1; then
-    # See if user has previously modified their install to
-    # tell libvirtd to use --listen
-    if grep -q -s -E '^LIBVIRTD_ARGS=.*--listen' %{_sysconfdir}/sysconfig/libvirtd; then
-        # Keep honouring --listen and *not* use systemd socket activation.
-        # Switching things might confuse management tools that expect the old
-        # style libvirtd
-        %{_bindir}/systemctl mask \
-                   libvirtd.socket \
-                   libvirtd-ro.socket \
-                   libvirtd-admin.socket \
-                   libvirtd-tls.socket \
-                   libvirtd-tcp.socket >/dev/null 2>&1 || :
-        %{_bindir}/systemctl try-restart libvirtd.service >/dev/null 2>&1 || :
-    else
-        # Old libvirtd owns the sockets and will delete them on
-        # shutdown. Can't use a try-restart as libvirtd will simply
-        # own the sockets again when it comes back up. Thus we must
-        # do this particular ordering, so that we get libvirtd
-        # running with socket activation in use
-        if  %{_bindir}/systemctl -q is-active libvirtd.service; then
-             %{_bindir}/systemctl stop libvirtd.service >/dev/null 2>&1 || :
-
-             %{_bindir}/systemctl try-restart \
-                    libvirtd.socket \
-                    libvirtd-ro.socket \
-                    libvirtd-admin.socket >/dev/null 2>&1 || :
-
-             %{_bindir}/systemctl start libvirtd.service >/dev/null 2>&1 || :
-        fi
-    fi
+    test "$DISABLE_RESTART_ON_UPDATE" != 1; then
+     %{_bindir}/systemctl try-restart libvirtd.service >/dev/null 2>&1 || :
 fi
 
 %pre daemon-common
