@@ -13,7 +13,7 @@ factory-rebuild:
 sle15sp5-rebuild:
   steps:
     - trigger_services:
-        project: home:jfehlig:gitlab-ci
+        project: Devel:Virt:SLE-15-SP5:Staging
         package: libvirt
   filters:
     event: push
