@@ -20,3 +20,16 @@ sle15sp5-rebuild:
     branches:
       only:
         - v9.0.0-sle15sp5
+
+
+sle15sp5-branch:
+  steps:
+    - branch_package:
+        source_project: Devel:Virt:SLE-15-SP5:Staging
+        source_package: libvirt
+	target_project: Devel:Virt:SLE-15-SP5:Staging:PRs
+  filters:
+    event: pull_request
+    branches:
+      only:
+        - v9.0.0-sle15sp5
