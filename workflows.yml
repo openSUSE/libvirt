@@ -27,7 +27,7 @@ sle15sp5-branch:
     - branch_package:
         source_project: Devel:Virt:SLE-15-SP5:Staging
         source_package: libvirt
-	target_project: Devel:Virt:SLE-15-SP5:Staging:PRs
+        target_project: Devel:Virt:SLE-15-SP5:Staging:PRs
   filters:
     event: pull_request
     branches:
