@@ -38,6 +38,7 @@
 %define with_storage_gluster  0%{!?_without_storage_gluster:1}
 %define with_storage_iscsi_direct 0%{!?_without_storage_iscsi_direct:0}
 %define with_apparmor      0%{!?_without_apparmor:1}
+%define with_interface     0%{!?_without_interface:1}
 
 # Optional bits on by default
 %define with_sanlock       1
@@ -63,6 +64,7 @@
 %if 0%{?suse_version} == 1600
     %define with_libxl     0
     %define with_apparmor  0
+    %define with_interface 0
 %endif
 
 # Enable numactl for most architectures. Handle aarch64 separately
@@ -138,7 +140,9 @@ Requires:       %{name}-daemon-driver-qemu = %{version}-%{release}
 Requires:       %{name}-daemon-driver-vbox = %{version}-%{release}
 %endif
 Requires:       %{name}-client = %{version}-%{release}
+%if %{with_interface}
 Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
+%endif
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
@@ -225,7 +229,9 @@ BuildRequires:  libnuma-devel
 %endif
 BuildRequires:  fuse-devel >= 2.8.6
 BuildRequires:  libcap-ng-devel >= 0.5.0
+%if %{with_interface}
 BuildRequires:  libnetcontrol-devel >= 0.2.0
+%endif
 %if %{with_libssh2}
 BuildRequires:  libssh2-devel
 %endif
@@ -642,7 +648,9 @@ Requires:       %{name}-daemon-proxy = %{version}-%{release}
 %else
 Requires:       %{name}-daemon = %{version}-%{release}
 %endif
+%if %{with_interface}
 Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
+%endif
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
@@ -662,7 +670,9 @@ Requires:       %{name}-daemon-proxy = %{version}-%{release}
 %else
 Requires:       %{name}-daemon = %{version}-%{release}
 %endif
+%if %{with_interface}
 Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
+%endif
 Requires:       %{name}-daemon-driver-lxc = %{version}-%{release}
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
@@ -683,7 +693,9 @@ Requires:       %{name}-daemon-proxy = %{version}-%{release}
 %else
 Requires:       %{name}-daemon = %{version}-%{release}
 %endif
+%if %{with_interface}
 Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
+%endif
 Requires:       %{name}-daemon-driver-libxl = %{version}-%{release}
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
@@ -703,7 +715,9 @@ Requires:       %{name}-daemon-proxy = %{version}-%{release}
 %else
 Requires:       %{name}-daemon = %{version}-%{release}
 %endif
+%if %{with_interface}
 Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
+%endif
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
@@ -830,6 +844,13 @@ libvirt plugin for NSS for translating domain names into IP addresses.
     %define arg_libxl -Ddriver_libxl=enabled
 %else
     %define arg_libxl -Ddriver_libxl=disabled
+%endif
+%if %{with_interface}
+    %define arg_interface -Ddriver_interface=enabled
+    %define arg_netcontrol -Dnetcontrol=enabled
+%else
+    %define arg_interface -Ddriver_interface=disabled
+    %define arg_netcontrol -Dnetcontrol=disabled
 %endif
 %if %{with_storage_rbd}
     %define arg_storage_rbd -Dstorage_rbd=enabled
@@ -966,7 +987,7 @@ libvirt plugin for NSS for translating domain names into IP addresses.
            -Ddriver_bhyve=disabled \
            -Ddriver_ch=disabled \
            %{?arg_remote_mode} \
-           -Ddriver_interface=enabled \
+           %{?arg_interface} \
            -Ddriver_network=enabled \
            -Dstorage_fs=enabled \
            -Dstorage_lvm=enabled \
@@ -984,7 +1005,7 @@ libvirt plugin for NSS for translating domain names into IP addresses.
            -Dcapng=enabled \
            -Dfuse=enabled \
            -Dnetcf=disabled \
-           -Dnetcontrol=enabled \
+           %{?arg_netcontrol} \
            -Dselinux=enabled \
            %{?arg_selinux_mount} \
            %{?arg_apparmor} \
@@ -1076,7 +1097,6 @@ ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rclibvirtd
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtproxyd
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtlogd
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtlockd
-ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtinterfaced
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtnetworkd
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtnodedevd
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtnwfilterd
@@ -1084,6 +1104,9 @@ ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtsecretd
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtstoraged
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rclibvirt-guests
 
+%if %{with_interface}
+ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtinterfaced
+%endif
 %if %{with_qemu}
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtqemud
 %endif
@@ -1503,6 +1526,7 @@ fi
 %dir %attr(0700, root, root) %{_sysconfdir}/%{name}/nwfilter/
 %config %{_sysconfdir}/%{name}/nwfilter/*.xml
 
+%if %{with_interface}
 %files daemon-driver-interface
 %config(noreplace) %{_sysconfdir}/%{name}/virtinterfaced.conf
 %{_datadir}/augeas/lenses/virtinterfaced.aug
@@ -1516,6 +1540,7 @@ fi
 %dir %{_libdir}/%{name}/connection-driver/
 %{_libdir}/%{name}/connection-driver/libvirt_driver_interface.so
 %doc %{_mandir}/man8/virtinterfaced.8*
+%endif
 
 %files daemon-driver-network
 %config(noreplace) %{_sysconfdir}/%{name}/virtnetworkd.conf
