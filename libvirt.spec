@@ -84,26 +84,8 @@
     %define with_libssh    1
 %endif
 
-# rbd enablement is a bit tricky. For x86_64
-%ifarch x86_64
-# enable on anything newer than 1320, or SLE12 family newer than 120100
-# use librbd-devel as build dependency
-    %if 0%{?suse_version} > 1320 || ( 0%{?suse_version} == 1315 && ( 0%{?sle_version} > 120100 ) )
-        %define with_storage_rbd 0%{!?_without_storage_rbd:1}
-        %define with_rbd_lib     librbd-devel
-    %endif
-# enable for SLE12 family <= 120100 (SLE12GA/SP1, Leap 42.1)
-# use ceph-devel as build dependency
-    %if 0%{?suse_version} == 1315 && 0%{?sle_version} <= 120100
-        %define with_storage_rbd 0%{!?_without_storage_rbd:1}
-        %define with_rbd_lib     ceph-devel
-    %endif
-%endif
-
-# For arm
-%ifarch aarch64
+%ifarch x86_64 aarch64
     %define with_storage_rbd 0%{!?_without_storage_rbd:1}
-    %define with_rbd_lib     librbd-devel
 %endif
 
 # libiscsi storage backend needs libiscsi >= 1.18.0 which is only available
@@ -115,16 +97,9 @@
 # numad is used to manage the CPU and memory placement dynamically for
 # qemu and lxc drivers
 %if %{with_qemu} || %{with_lxc}
-# Enable numad for most architectures. Handle aarch64 separately
-    %ifnarch s390 s390x %arm %ix86 aarch64
+# Enable numad for most architectures
+    %ifnarch s390 s390x %arm %ix86
         %define with_numad 0%{!?_without_numad:1}
-    %endif
-# For aarch64, enable on anything newer than 1320, or SLE12 family newer
-# than 120100
-    %ifarch aarch64
-        %if 0%{?suse_version} > 1320 || ( 0%{?suse_version} == 1315 && 0%{?sle_version} > 120100 )
-            %define with_numad 0%{!?_without_numad:1}
-        %endif
     %endif
 %endif
 
@@ -238,7 +213,7 @@ BuildRequires:  parted-devel
 # For Multipath support
 BuildRequires:  device-mapper-devel
 %if %{with_storage_rbd}
-BuildRequires:  %{with_rbd_lib}
+BuildRequires:  librbd-devel
 %endif
 %if %{with_storage_gluster}
 BuildRequires:  glusterfs-devel >= 3.4.1
