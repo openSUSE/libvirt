@@ -16,14 +16,13 @@
 #
 
 
-# The hypervisor drivers that run in libvirtd
+# Stateful hypervisor drivers that run in daemons
 %define with_qemu          0%{!?_without_qemu:1}
 %define with_lxc           0%{!?_without_lxc:1}
 %define with_libxl         0%{!?_without_libxl:1}
 %define with_vbox          0%{!?_without_vbox:0}
 
-# Then the hypervisor drivers that run outside libvirtd, in libvirt.so
-
+# Stateless hypervisor drivers that run in libvirt.so
 # The esx driver is built for both openSUSE and SLE, but it is not supported
 %define with_esx           0%{!?_without_esx:1}
 # Until we have requests for them, disable building the vmware, hyperv and
@@ -32,7 +31,7 @@
 %define with_hyperv        0%{!?_without_hyperv:0}
 %define with_openvz        0%{!?_without_openvz:0}
 
-# Then the secondary host drivers, which run inside libvirtd
+# Stateful secondary host drivers that run in daemons
 %define with_storage_rbd   0%{!?_without_storage_rbd:0}
 # The gluster storage backend is built for both openSUSE and SLE, but it is
 # not supported
@@ -200,7 +199,8 @@ BuildRequires:  perl
 BuildRequires:  python3
 BuildRequires:  python3-docutils
 BuildRequires:  readline-devel
-# rpcgen is needed since we have a patch touching remote_protocol.x
+# Be conservative and require rpcgen in case any patches touch
+# remote protocol definitions
 BuildRequires:  rpcgen
 # For pool-build probing for existing pools
 BuildRequires:  libblkid-devel >= 2.17
@@ -260,7 +260,7 @@ BuildRequires:  libcurl-devel
 BuildRequires:  libwsman-devel >= 2.6.3
 %endif
 BuildRequires:  audit-devel
-# we need /usr/sbin/dtrace
+# For /usr/sbin/dtrace
 BuildRequires:  systemtap-sdt-devel
 %if %{with_numad}
 BuildRequires:  numad
@@ -334,7 +334,7 @@ Requires:       dmidecode
 %endif
 # For service management
 %{?systemd_requires}
-# libvirtd depends on 'messagebus' service
+# Daemons depend on the 'messagebus' service
 Requires:       dbus-1
 Requires:       group(libvirt)
 # Needed by libvirt-guests init script.
@@ -443,7 +443,7 @@ Requires:       %{name}-libs = %{version}-%{release}
 %if 0%{?suse_version} >= 1550 || 0%{?sle_version} >= 150300
 Requires:       mdevctl
 %endif
-# for modprobe of pci devices
+# For modprobe of pci devices
 Requires:       modutils
 
 %description daemon-driver-nodedev
@@ -604,7 +604,6 @@ Requires:       systemd-container
 %if 0%{?suse_version} >= 1550 || 0%{?sle_version} >= 150300
 Requires:       swtpm
 %endif
-# The KVM libvirt stack really does need UEFI firmware these days
 %ifarch x86_64
 Requires:       qemu-ovmf-x86_64
 %endif
@@ -626,7 +625,7 @@ Requires:       %{name}-libs = %{version}-%{release}
 # There really is a hard cross-driver dependency here
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       systemd-container
-# for modprobe of nbd driver
+# For modprobe of nbd driver
 Requires:       modutils
 %if %{with_numad}
 Suggests:       numad
@@ -651,7 +650,6 @@ VirtualBox
 Summary:        Libxl driver plugin for the libvirtd daemon
 Requires:       %{name}-daemon-common = %{version}-%{release}
 Requires:       %{name}-libs = %{version}-%{release}
-# The Xen libvirt stack really does need UEFI firmware these days
 Requires:       qemu-ovmf-x86_64
 
 %description daemon-driver-libxl
@@ -789,7 +787,7 @@ Include header files & development libraries for the libvirt C library.
 %package daemon-plugin-sanlock
 Summary:        Sanlock lock manager plugin for QEMU driver
 Requires:       sanlock >= 2.4
-# for virt-sanlock-cleanup require augeas
+# For virt-sanlock-cleanup require augeas
 Requires:       %{name}-libs = %{version}-%{release}
 Requires:       augeas
 Obsoletes:      %{name}-lock-sanlock < 9.0.0
@@ -1047,7 +1045,7 @@ libvirt plugin for NSS for translating domain names into IP addresses.
 
 %install
 %meson_install
-# remove currently unsupported locale(s)
+# Remove currently unsupported locale(s)
 for dir in %{buildroot}/usr/share/locale/*
 do
   sdir=`echo $dir | sed "s|%{buildroot}||"`
@@ -1096,7 +1094,6 @@ rm -f %{buildroot}/%{_datadir}/augeas/lenses/libvirt_sanlock.aug
 rm -f %{buildroot}/%{_datadir}/augeas/lenses/tests/test_libvirt_sanlock.aug
 %endif
 
-# init scripts
 rm -f %{buildroot}/usr/lib/sysctl.d/60-libvirtd.conf
 # Provide rc symlink backward compatibility
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rclibvirtd
@@ -1124,15 +1121,15 @@ ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtxend
 ln -s %{_sbindir}/service %{buildroot}/%{_sbindir}/rcvirtvboxd
 %endif
 
-# install firewall services for migration ports
+# Install firewall services for migration ports
 mkdir -p %{buildroot}/%{_fwdefdir}
 install -m 644 %{S:3} %{buildroot}/%{_fwdefdir}/libvirtd-relocation-server.xml
 
-# install supportconfig plugin
+# Install supportconfig plugin
 mkdir -p %{buildroot}/usr/lib/supportconfig/plugins
 install -m 755 %{S:1} %{buildroot}/usr/lib/supportconfig/plugins/libvirt
 
-# install qemu hook script
+# Install qemu hook script
 install -m 755 %{S:2} %{buildroot}/%{_sysconfdir}/%{name}/hooks/qemu
 
 %ifarch %{power64} s390x x86_64
