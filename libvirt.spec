@@ -59,9 +59,10 @@
     %define with_libxl     0
 %endif
 
-# Don't build Xen for ALP-based products
+# Items to exclude in ALP-based products
 %if 0%{?suse_version} == 1600
     %define with_libxl     0
+    %define with_apparmor  0
 %endif
 
 # Enable numactl for most architectures. Handle aarch64 separately
@@ -871,10 +872,10 @@ libvirt plugin for NSS for translating domain names into IP addresses.
     %define arg_numad -Dnumad=disabled
 %endif
 %if %{with_apparmor}
-    %define arg_apparmor -Dapparmor=enabled
+    %define arg_apparmor -Dapparmor=enabled -Dsecdriver_apparmor=enabled
     %define arg_apparmor_profiles -Dapparmor_profiles=enabled
 %else
-    %define arg_apparmor -Dapparmor=disabled
+    %define arg_apparmor -Dapparmor=disabled -Dsecdriver_apparmor=disabled
     %define arg_apparmor_profiles -Dapparmor_profiles=disabled
 %endif
 %if %{with_sanlock}
