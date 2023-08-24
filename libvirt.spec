@@ -106,6 +106,7 @@
     %define with_interface 0
     %define with_sanlock   0
     %define with_numad     0
+    %define with_esx       0
 %endif
 
 # Force QEMU to run as qemu:qemu
