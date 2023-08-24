@@ -60,13 +60,6 @@
     %define with_libxl     0
 %endif
 
-# Items to exclude in ALP-based products
-%if 0%{?suse_version} == 1600
-    %define with_libxl     0
-    %define with_apparmor  0
-    %define with_interface 0
-%endif
-
 # Enable numactl for most architectures. Handle aarch64 separately
 %ifarch s390 s390x %arm %ix86
     %define with_numactl   0
@@ -104,6 +97,14 @@
     %ifnarch s390 s390x %arm %ix86
         %define with_numad 0%{!?_without_numad:1}
     %endif
+%endif
+
+# Items to exclude in ALP-based products
+%if 0%{?suse_version} == 1600
+    %define with_libxl     0
+    %define with_apparmor  0
+    %define with_interface 0
+    %define with_sanlock   0
 %endif
 
 # Force QEMU to run as qemu:qemu
