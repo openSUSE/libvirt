@@ -41,17 +41,17 @@
 %define with_interface     0%{!?_without_interface:1}
 
 # Optional bits on by default
-%define with_sanlock       1
-%define with_polkit_rules  1
-%define with_wireshark     1
-%define with_libssh2       1
-%define with_numactl       1
-%define with_modular_daemons 1
+%define with_sanlock       0%{!?_without_sanlock:1}
+%define with_polkit_rules  0%{!?_without_polkit_rules:1}
+%define with_wireshark     0%{!?_without_wireshark:1}
+%define with_libssh2       0%{!?_without_libssh2:1}
+%define with_numactl       0%{!?_without_numactl:1}
+%define with_modular_daemons 0%{!?_without_modular_daemons:1}
 
 # A few optional bits off by default, we enable later
-%define with_numad         0
-%define with_firewalld_zone 0
-%define with_libssh        0
+%define with_numad         0%{!?_without_numad:0}
+%define with_firewalld_zone 0%{!?_without_firewalld_zone:0}
+%define with_libssh        0%{!?_without_libssh:0}
 
 # Set the OS / architecture specific special cases
 
@@ -72,12 +72,12 @@
 
 # The 'libvirt' zone must be used with firewalld >= 0.7.0
 %if 0%{?suse_version} >= 1550 || 0%{?sle_version} >= 150300
-    %define with_firewalld_zone 1
+    %define with_firewalld_zone 0%{!?_without_firewalld_zone:1}
 %endif
 
 # Enable libssh support in newer code bases
 %if 0%{?suse_version} >= 1500
-    %define with_libssh    1
+    %define with_libssh    0%{!?_without_libssh:1}
 %endif
 
 %ifarch x86_64 aarch64
@@ -87,7 +87,7 @@
 # libiscsi storage backend needs libiscsi >= 1.18.0 which is only available
 # in suse_version >= 1500
 %if 0%{?suse_version} >= 1500
-    %define with_storage_iscsi_direct 1
+    %define with_storage_iscsi_direct 0%{!?_without_storage_iscsi_direct:1}
 %endif
 
 # numad is used to manage the CPU and memory placement dynamically for
