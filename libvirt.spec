@@ -126,7 +126,7 @@
 
 Name:           libvirt
 URL:            https://libvirt.org/
-Version:        9.6.0
+Version:        9.7.0
 Release:        0
 Summary:        Library providing a virtualization API
 License:        LGPL-2.1-or-later
@@ -1760,8 +1760,6 @@ fi
 %{_datadir}/augeas/lenses/libvirtd_libxl.aug
 %{_datadir}/augeas/lenses/tests/test_libvirtd_libxl.aug
 %dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/libxl/
-%dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/libxl/channel/
-%dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/libxl/channel/target/
 %dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/libxl/dump/
 %dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/libxl/save/
 %dir %attr(0700, root, root) %{_localstatedir}/log/%{name}/libxl/
