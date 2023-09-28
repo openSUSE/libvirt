@@ -1,25 +1,42 @@
 #!/bin/bash
 
 hvisor="KVM"
+daemon="virtqemud"
 if [ -e /proc/xen/privcmd ]; then
     hvisor="XEN"
+    daemon="virtxend"
 fi
 
 # Reset testing environment
 #
-# Restart libvirtd and wait 5 seconds for it to come to life
-systemctl restart libvirtd
-for count in `seq 0 5`; do
-    systemctl status libvirtd &>/dev/null
-    if [ $? -eq 0 ]; then
-	break
-    fi
-    if [ $count -eq 5 ]; then
-	echo "Libvirtd is taking too long to restart, aborting.."
-	exit 1
-    fi
-    sleep 1
-done
+# Restart daemons and wait 5 seconds for it to come to life
+if systemctl --quiet is-enabled libvirtd; then
+    systemctl restart libvirtd
+    for count in `seq 0 5`; do
+	if systemctl status libvirtd &>/dev/null; then
+	    break
+	fi
+	if [ $count -eq 5 ]; then
+	    echo "libvirtd is taking too long to restart, aborting.."
+	    exit 1
+	fi
+	sleep 1
+    done
+fi
+
+if systemctl --quiet is-enabled $daemon; then
+    systemctl restart $daemon
+    for count in `seq 0 5`; do
+	if systemctl status $daemon &>/dev/null; then
+	    break
+	fi
+	if [ $count -eq 5 ]; then
+	    echo "$daemon is taking too long to restart, aborting.."
+	    exit 1
+	fi
+	sleep 1
+    done
+fi
 
 # Ensure default network is active
 if [ -z "$(virsh net-list | grep default)" ]; then
