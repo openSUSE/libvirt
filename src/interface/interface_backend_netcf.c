@@ -1243,7 +1243,7 @@ int netcfIfaceRegister(void)
      */
     if (ncf_init(&netcf, NULL) != 0) {
         VIR_WARN("Failed to initialize libnetcontrol.  Management of interface devices is disabled");
-        return 0;
+        return -1;
     }
 
     ncf_close(netcf);
