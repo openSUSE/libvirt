@@ -1237,13 +1237,13 @@ int netcfIfaceRegister(void)
 {
     struct netcf *netcf;
 
-    /* Initialization of libnetcontrol will fail if NetworkManager is enabled.
+    /* Check if libnetcontrol/wicked can be initialized.
      * Skip registration if ncf_init fails.
      * TODO: finer-grained check?  E.g. is_nm_enabled()
      */
     if (ncf_init(&netcf, NULL) != 0) {
-        VIR_WARN("Failed to initialize libnetcontrol.  Management of interface devices is disabled");
-        return 0;
+        VIR_WARN("Management of interface devices using libnetcontrol/wicked is disabled");
+        return -1;
     }
 
     ncf_close(netcf);
