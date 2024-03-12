@@ -1,16 +1,28 @@
 #!/bin/bash
 
 hvisor="KVM"
-daemon="virtqemud"
+daemon_mode="modular"
+daemon_name="virtqemud"
+
+ver=`cat /etc/os-release |  grep VERSION_ID | awk -F= '{print $2}' | tr -d '"'`
+case "$ver" in
+    15.5)
+	daemon_mode="monolithic"
+	;;
+    *)
+	;;
+esac
+
 if [ -e /proc/xen/privcmd ]; then
     hvisor="XEN"
-    daemon="virtxend"
+    daemon_name="virtxend"
 fi
+
 
 # Reset testing environment
 #
-# Restart daemons and wait 5 seconds for it to come to life
-if systemctl --quiet is-enabled libvirtd; then
+# Restart daemons and wait 5 seconds for them to come to life
+if [ "$daemon_mode" == "monolithic" ]; then
     systemctl restart libvirtd
     for count in `seq 0 5`; do
 	if systemctl status libvirtd &>/dev/null; then
@@ -22,21 +34,26 @@ if systemctl --quiet is-enabled libvirtd; then
 	fi
 	sleep 1
     done
-fi
-
-if systemctl --quiet is-enabled $daemon; then
-    systemctl restart $daemon
+else
+    systemctl restart $daemon_name
     for count in `seq 0 5`; do
-	if systemctl status $daemon &>/dev/null; then
+	if systemctl status $daemon_name &>/dev/null; then
 	    break
 	fi
 	if [ $count -eq 5 ]; then
-	    echo "$daemon is taking too long to restart, aborting.."
+	    echo "$daemon_name is taking too long to restart, aborting.."
 	    exit 1
 	fi
 	sleep 1
     done
+    systemctl restart $daemon_name.socket
+    systemctl restart virtnetworkd.socket
+    systemctl restart virtnwfilterd.socket
+    systemctl restart virtstoraged.socket
+    systemctl restart virtsecretd.socket
+    systemctl restart virtnodedevd.socket
 fi
+
 
 # Ensure default network is active
 if [ -z "$(virsh net-list | grep default)" ]; then
