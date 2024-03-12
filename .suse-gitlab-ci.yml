@@ -29,7 +29,7 @@ deploy_sle15sp5:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /.*-sle15sp5/
   script:
     - echo "Starting deploy stage for SLE15 SP5"
-    - /root/bin/deploy.sh
+    - /root/bin/deploy.sh virt_staging_repo https://download.suse.de/ibs/Devel:/Virt:/SLE-15-SP5:/Staging/SUSE_SLE-15-SP5_Update_standard/
     - echo "Deploy stage finished"
 
 test_sle15sp5:
@@ -66,7 +66,7 @@ deploy_sle15sp6:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /.*-sle15sp6/
   script:
     - echo "Starting deploy stage for SLE15 SP6"
-    - /root/bin/deploy.sh
+    - /root/bin/deploy.sh virt_staging_repo https://download.suse.de/ibs/Devel:/Virt:/SLE-15-SP6:/Staging/SUSE_SLE-15-SP6_Update_standard/
     - echo "Deploy stage finished"
 
 test_sle15sp6:
