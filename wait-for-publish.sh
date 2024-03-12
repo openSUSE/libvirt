@@ -28,9 +28,11 @@ echo "source rev: $source_rev"
 blocked=1
 for (( i = 0; i < $blockwait; i++ )); do
     status=`osc -A $apihost --config=$OSC_CONFIG api /build/$proj/$repo/$arch/$pkg/_status | xmllint --xpath "string(//status/@code)" -`
-    if [ $status != "blocked" ]; then
-	blocked=0
-	break
+    if [ $? -eq 0 ]; then
+	if [ "$status" != "blocked" ]; then
+	    blocked=0
+	    break
+	fi
     fi
     echo "The build is blocked, waiting..."
     sleep 60
@@ -45,7 +47,7 @@ fi
 
 # Wait for the package to build and publish by comparing the source rev to the
 # latest rev in build history
-bhist_rev=''
+bhist_rev=0
 for (( i = 0; i < $buildwait; i++ )); do
     if [ $i -ne 0 ]; then
         echo "$i: waiting for OBS/IBS to build rev $source_rev"
@@ -53,10 +55,12 @@ for (( i = 0; i < $buildwait; i++ )); do
     fi
 
     bhist_rev=`osc -A $apihost --config=$OSC_CONFIG api /build/$proj/$repo/$arch/$pkg/_history | xmllint --xpath "string(//buildhistory/entry[last()]/@rev)" -`
-    if [ $bhist_rev -ge $source_rev ]; then
-        echo `date -u`
-        echo "Build is complete and published"
-        exit 0
+    if [ $? -eq 0 ]; then
+	if [ $bhist_rev -ge $source_rev ]; then
+            echo `date -u`
+            echo "Build is complete and published"
+            exit 0
+	fi
     fi
 done
 
