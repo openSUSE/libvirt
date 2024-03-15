@@ -22,6 +22,10 @@ rm -f ~/.osc_cookiejar ~/.local/state/osc/cookiejar
 
 # Get the latest rev of sources
 source_rev=`osc -A $apihost --config=$OSC_CONFIG api /source/$proj/$pkg | xmllint --xpath "string(//directory/@rev)" -`
+if [ "X$source_rev" == "X" ]; then
+    echo "Unable to obtain the source revision of $proj/$pkg"
+    exit 1
+fi
 echo "source rev: $source_rev"
 
 # Check if build is blocked
