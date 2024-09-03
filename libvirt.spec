@@ -38,7 +38,11 @@
 %define with_storage_gluster  0%{!?_without_storage_gluster:1}
 %define with_storage_iscsi_direct 0%{!?_without_storage_iscsi_direct:0}
 %define with_apparmor      0%{!?_without_apparmor:1}
-%define with_interface     0%{!?_without_interface:1}
+# The udev interface backend is the only one that works across SUSE distros.
+# It supports just a handful of read-only operations, has a history of
+# instability, and is insufficiently maintained. Completely disable the
+# interface driver.
+%define with_interface     0%{!?_without_interface:0}
 
 # Optional bits on by default
 %define with_sanlock       0%{!?_without_sanlock:1}
@@ -145,7 +149,7 @@
 
 Name:           libvirt
 URL:            https://libvirt.org/
-Version:        10.6.0
+Version:        10.7.0
 Release:        0
 Summary:        Library providing a virtualization API
 License:        LGPL-2.1-or-later
