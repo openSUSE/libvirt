@@ -123,9 +123,8 @@
     %define with_storage_gluster 0
 %endif
 
-# Prefer nftables for Tumbleweed, but keep using iptables for distros based
-# on SLE15 codestream
-%if 0%{?suse_version} > 1500
+# Prefer nftables if available
+%if "%{?default_firewall_backend}" == "nftables"
     %define prefer_nftables 1
     %define firewall_backend_priority nftables,iptables
 %else
