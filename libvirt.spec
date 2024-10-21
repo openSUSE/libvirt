@@ -689,7 +689,7 @@ Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
 %endif
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
-Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
+Recommends:     %{name}-daemon-driver-nwfilter = %{version}-%{release}
 Requires:       %{name}-daemon-driver-qemu = %{version}-%{release}
 Requires:       %{name}-daemon-driver-secret = %{version}-%{release}
 Requires:       %{name}-daemon-driver-storage = %{version}-%{release}
@@ -711,7 +711,7 @@ Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
 Requires:       %{name}-daemon-driver-lxc = %{version}-%{release}
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
-Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
+Recommends:     %{name}-daemon-driver-nwfilter = %{version}-%{release}
 Requires:       %{name}-daemon-driver-secret = %{version}-%{release}
 Requires:       %{name}-daemon-driver-storage = %{version}-%{release}
 
@@ -733,7 +733,6 @@ Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
 Requires:       %{name}-daemon-driver-libxl = %{version}-%{release}
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
-Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
 Requires:       %{name}-daemon-driver-secret = %{version}-%{release}
 Requires:       %{name}-daemon-driver-storage = %{version}-%{release}
 Requires:       xen
@@ -752,7 +751,7 @@ Requires:       %{name}-daemon-driver-interface = %{version}-%{release}
 %endif
 Requires:       %{name}-daemon-driver-network = %{version}-%{release}
 Requires:       %{name}-daemon-driver-nodedev = %{version}-%{release}
-Requires:       %{name}-daemon-driver-nwfilter = %{version}-%{release}
+Recommends:     %{name}-daemon-driver-nwfilter = %{version}-%{release}
 Requires:       %{name}-daemon-driver-secret = %{version}-%{release}
 Requires:       %{name}-daemon-driver-storage = %{version}-%{release}
 Requires:       %{name}-daemon-driver-vbox = %{version}-%{release}
