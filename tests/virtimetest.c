@@ -95,16 +95,24 @@ testTimeLocalOffset(const void *args)
 }
 
 
-/* return true if the date is Jan 1 or Dec 31 (localtime) */
+/* return true if the date is Jan 1-5 or Dec 31 (localtime) */
 static bool
 isNearYearEnd(void)
 {
     g_autoptr(GDateTime) now = g_date_time_new_now_local();
 
-    return ((g_date_time_get_month(now) == 1 &&
-             g_date_time_get_day_of_month(now) == 1) ||
-            (g_date_time_get_month(now) == 12 &&
-             g_date_time_get_day_of_month(now) == 31));
+    if (g_date_time_get_month(now) == 12 &&
+        g_date_time_get_day_of_month(now) == 31)
+        return true;
+
+    if (g_date_time_get_month(now) == 1) {
+        gint day = g_date_time_get_day_of_month(now);
+
+        if (day >= 1 && day <= 5)
+            return true;
+    }
+
+    return false;
 }
 
 
