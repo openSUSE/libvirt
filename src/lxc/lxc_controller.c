@@ -775,8 +775,14 @@ static int virLXCControllerGetNumadAdvice(virLXCController *ctrl,
      * either <vcpu> or <numatune> is 'auto'.
      */
     if (virDomainDefNeedsPlacementAdvice(ctrl->def)) {
+        unsigned long long pagesz = 0;
+
+        if (ctrl->def->mem.hugepages)
+            pagesz = ctrl->def->mem.hugepages->size;
+
         nodeset = virNumaGetAutoPlacementAdvice(virDomainDefGetVcpus(ctrl->def),
-                                                ctrl->def->mem.cur_balloon);
+                                                ctrl->def->mem.cur_balloon,
+                                                pagesz);
         if (!nodeset)
             return -1;
 
