@@ -26,7 +26,8 @@
 
 
 char *virNumaGetAutoPlacementAdvice(unsigned short vcpus,
-                                    unsigned long long balloon);
+                                    unsigned long long balloon,
+                                    unsigned long long pagesz);
 
 int virNumaSetupMemoryPolicy(virDomainNumatuneMemMode mode,
                              virBitmap *nodeset);
