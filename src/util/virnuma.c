@@ -56,20 +56,22 @@ VIR_LOG_INIT("util.numa");
 #if WITH_NUMAD
 char *
 virNumaGetAutoPlacementAdvice(unsigned short vcpus,
-                              unsigned long long balloon)
+                              unsigned long long balloon,
+                              unsigned long long pagesz)
 {
     g_autoptr(virCommand) cmd = NULL;
     char *output = NULL;
 
-    cmd = virCommandNewArgList("numad", "-w", NULL);
+    cmd = virCommandNewArgList("/usr/sbin/numa-preplace", "-w", NULL);
     virCommandAddArgFormat(cmd, "%d:%llu", vcpus,
                            VIR_DIV_UP(balloon, 1024));
+    virCommandAddArgFormat(cmd, "-H %llu", VIR_DIV_UP(pagesz, 1024));
 
     virCommandSetOutputBuffer(cmd, &output);
 
     if (virCommandRun(cmd, NULL) < 0) {
         virReportError(VIR_ERR_OPERATION_FAILED, "%s",
-                       _("Failed to query numad for the advisory nodeset"));
+                       _("Failed to query numa-preplace for the advisory nodeset"));
         VIR_FREE(output);
     }
 
@@ -78,7 +80,8 @@ virNumaGetAutoPlacementAdvice(unsigned short vcpus,
 #else /* !WITH_NUMAD */
 char *
 virNumaGetAutoPlacementAdvice(unsigned short vcpus G_GNUC_UNUSED,
-                              unsigned long long balloon G_GNUC_UNUSED)
+                              unsigned long long balloon G_GNUC_UNUSED,
+                              unsigned long long pagesz G_GNUC_UNUSED)
 {
     virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
                    _("numad is not available on this host"));
