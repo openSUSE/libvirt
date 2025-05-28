@@ -6583,6 +6583,7 @@ qemuProcessPrepareDomainNUMAPlacement(virDomainObj *vm)
     g_autoptr(virBitmap) numadNodeset = NULL;
     g_autoptr(virBitmap) hostMemoryNodeset = NULL;
     g_autoptr(virCapsHostNUMA) caps = NULL;
+    unsigned long long pagesz = 0;
 
     /* Get the advisory nodeset from numad if 'placement' of
      * either <vcpu> or <numatune> is 'auto'.
@@ -6590,8 +6591,12 @@ qemuProcessPrepareDomainNUMAPlacement(virDomainObj *vm)
     if (!virDomainDefNeedsPlacementAdvice(vm->def))
         return 0;
 
+    if (vm->def->mem.hugepages)
+        pagesz = vm->def->mem.hugepages->size;
+
     nodeset = virNumaGetAutoPlacementAdvice(virDomainDefGetVcpus(vm->def),
-                                            virDomainDefGetMemoryTotal(vm->def));
+                                            virDomainDefGetMemoryTotal(vm->def),
+                                            pagesz);
 
     if (!nodeset)
         return -1;
