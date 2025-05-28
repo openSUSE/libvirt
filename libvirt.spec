@@ -89,11 +89,11 @@
     %define with_userfaultfd_sysctl 0
 %endif
 
-# numad is used to manage the CPU and memory placement dynamically for
-# qemu and lxc drivers
+# numa-preplace (formerly numad) is used to manage the CPU and memory
+# placement dynamically for qemu and lxc drivers
 %if %{with_qemu} || %{with_lxc}
-# Enable numad for most architectures
-    %ifnarch s390 s390x %arm %ix86
+# Enable numa-preplace for x86_64 only
+    %ifarch x86_64
         %define with_numad 0%{!?_without_numad:1}
     %endif
 %endif
@@ -111,7 +111,6 @@
     %define with_libxl     0
     %define with_lxc       0
     %define with_fuse      0
-    %define with_numad     0
     %define with_sanlock   0
     %define with_storage_gluster 0
     %define with_storage_rbd     0
@@ -276,9 +275,6 @@ BuildRequires:  libwsman-devel >= 2.6.3
 BuildRequires:  audit-devel
 # For /usr/sbin/dtrace
 BuildRequires:  systemtap-sdt-devel
-%if %{with_numad}
-BuildRequires:  numad
-%endif
 %if %{with_wireshark}
 BuildRequires:  wireshark-devel
 %endif
@@ -632,7 +628,7 @@ Requires:       qemu-ovmf-x86_64
 Requires:       qemu-uefi-aarch64
 %endif
 %if %{with_numad}
-Suggests:       numad
+Suggests:       numa-preplace
 %endif
 %if %{with_nbdkit}
 Recommends:     nbdkit
@@ -654,7 +650,7 @@ Requires:       systemd-container
 # For modprobe of nbd driver
 Requires:       modutils
 %if %{with_numad}
-Suggests:       numad
+Suggests:       numa-preplace
 %endif
 
 %description daemon-driver-lxc
