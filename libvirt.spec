@@ -148,7 +148,7 @@
 
 Name:           libvirt
 URL:            https://libvirt.org/
-Version:        11.4.0
+Version:        11.5.0
 Release:        0
 Summary:        Library providing a virtualization API
 License:        LGPL-2.1-or-later
@@ -230,12 +230,6 @@ BuildRequires:  polkit >= 0.112
 %if %{with_nbdkit}
 BuildRequires:  libnbd-devel
 %endif
-# For mount/umount in FS driver
-BuildRequires:  util-linux
-# For LVM drivers
-BuildRequires:  lvm2
-# For pool type=iscsi
-BuildRequires:  open-iscsi
 %if %{with_storage_iscsi_direct}
 # For pool type=iscsi-direct
 BuildRequires:  libiscsi-devel
@@ -489,7 +483,7 @@ Summary:        Storage driver plugin including base backends for the libvirtd d
 Requires:       %{name}-daemon-common = %{version}-%{release}
 Requires:       %{name}-libs = %{version}-%{release}
 Recommends:     nfs-utils
-# For mkfs
+# For mkfs and mount/unmount
 Requires:       util-linux
 %if %{with_qemu}
 # From QEMU RPMs
