@@ -280,7 +280,7 @@ virQEMUDriverConfig *virQEMUDriverConfigNew(bool privileged,
     cfg->dbusDaemonName = g_strdup(QEMU_DBUS_DAEMON);
     cfg->qemuRdpName = g_strdup(QEMU_RDP);
 
-    cfg->securityDefaultConfined = false;
+    cfg->securityDefaultConfined = true;
     cfg->securityRequireConfined = false;
 
     cfg->keepAliveInterval = 5;

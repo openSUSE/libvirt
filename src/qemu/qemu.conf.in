@@ -530,15 +530,8 @@
 
 # If set to non-zero, then the default security labeling
 # will make guests confined. If set to zero, then guests
-# will be unconfined by default. Defaults to 0.
-#
-# SUSE Note:
-# Default confinement of guests has historically been disabled in SUSE
-# distros. This is still the case, but future releases may switch to
-# confining guests by default. Change this to a non-zero value to enable
-# default confinement of guests.
-#
-#security_default_confined = 0
+# will be unconfined by default. Defaults to 1.
+#security_default_confined = 1
 
 
 # If set to non-zero, then attempts to create unconfined
