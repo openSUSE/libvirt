@@ -2165,7 +2165,7 @@ elsif ($mode eq "client") {
                 print "/* Returns: $fail on error/denied, $pass on allowed */\n";
                 print "$ret $apiname(" . join(", ", @argdecls) . ")\n";
                 print "{\n";
-                print "    virAccessManager *mgr;\n";
+                print "    g_autoptr(virAccessManager) mgr = NULL;\n";
                 print "    int rv;\n";
                 print "\n";
                 print "    if (!(mgr = virAccessManagerGetDefault())) {\n";
@@ -2205,7 +2205,6 @@ elsif ($mode eq "client") {
                         print "        ";
                     }
                     print "(rv = $method(" . join(", ", @argvars, $perm) . ")) <= 0) {\n";
-                    print "        virObjectUnref(mgr);\n";
                     if ($action eq "Ensure") {
                         print "        if (rv == 0)\n";
                         print "            virReportError(VIR_ERR_ACCESS_DENIED,\n";
@@ -2219,7 +2218,6 @@ elsif ($mode eq "client") {
                     print "\n";
                 }
 
-                print "    virObjectUnref(mgr);\n";
                 print "    return $pass;\n";
                 print "}\n\n";
             }

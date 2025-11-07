@@ -38,7 +38,7 @@ void virAccessManagerSetDefault(virAccessManager *manager);
 
 virAccessManager *virAccessManagerNew(const char *name);
 virAccessManager *virAccessManagerNewStack(const char **names);
-
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(virAccessManager, virObjectUnref);
 
 void *virAccessManagerGetPrivateData(virAccessManager *manager);
 
