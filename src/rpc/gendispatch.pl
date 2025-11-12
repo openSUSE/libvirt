@@ -2214,7 +2214,7 @@ elsif ($mode eq "client") {
                         print "        virResetLastError();\n";
                         print "        return $fail;\n";
                     }
-                    print "    }";
+                    print "    }\n";
                     print "\n";
                 }
 
