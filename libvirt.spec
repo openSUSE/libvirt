@@ -345,7 +345,7 @@ Requires:       dmidecode
 # For service management
 %{?systemd_requires}
 # Daemons depend on the 'messagebus' service
-Requires:       dbus-1
+Requires:       dbus-service
 Requires:       group(libvirt)
 # Needed by libvirt-guests init script.
 Requires:       gettext-runtime
