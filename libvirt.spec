@@ -145,7 +145,7 @@
 
 Name:           libvirt
 URL:            https://libvirt.org/
-Version:        12.0.0
+Version:        12.1.0
 Release:        0
 Summary:        Library providing a virtualization API
 License:        LGPL-2.1-or-later
@@ -1371,15 +1371,19 @@ fi
 
 %pre daemon-driver-secret
 %libvirt_daemon_systemd_pre virtsecretd
+%libvirt_daemon_systemd_pre virt-secret-init-encryption
 
 %post daemon-driver-secret
 %libvirt_daemon_systemd_post virtsecretd
+%libvirt_daemon_systemd_post virt-secret-init-encryption
 
 %preun daemon-driver-secret
 %libvirt_daemon_systemd_preun virtsecretd
+%libvirt_daemon_systemd_preun virt-secret-init-encryption
 
 %postun daemon-driver-secret
 %libvirt_daemon_systemd_postun_restart virtsecretd
+%libvirt_daemon_systemd_postun_restart virt-secret-init-encryption
 
 %pre daemon-driver-qemu
 %libvirt_daemon_systemd_pre virtqemud
@@ -1638,12 +1642,17 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/virtsecretd.conf
 %{_datadir}/augeas/lenses/virtsecretd.aug
 %{_datadir}/augeas/lenses/tests/test_virtsecretd.aug
+%{_datadir}/augeas/lenses/libvirt_secrets.aug
+%{_datadir}/augeas/lenses/tests/test_libvirt_secrets.aug
+%config(noreplace) %{_sysconfdir}/%{name}/secret.conf
 %{_unitdir}/virtsecretd.service
+%{_unitdir}/virt-secret-init-encryption.service
 %{_unitdir}/virtsecretd.socket
 %{_unitdir}/virtsecretd-ro.socket
 %{_unitdir}/virtsecretd-admin.socket
 %{_sbindir}/virtsecretd
 %dir %attr(0700, root, root) %{_sysconfdir}/%{name}/secrets/
+%dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/secrets/
 %{_libdir}/%{name}/connection-driver/libvirt_driver_secret.so
 %doc %{_mandir}/man8/virtsecretd.8*
 
