@@ -9,3 +9,4 @@ module Test_libvirt_sanlock =
 { "io_timeout" = "0" }
 { "user" = "root" }
 { "group" = "root" }
+{ "check_disk_lease_owner" = "0" }

@@ -25,6 +25,7 @@ module Libvirt_sanlock =
              | int_entry "io_timeout"
              | str_entry "user"
              | str_entry "group"
+             | bool_entry "check_disk_lease_owner"
    let comment = [ label "#comment" . del /#[ \t]*/ "# " .  store /([^ \t\n][^\n]*)?/ . del /\n/ "\n" ]
    let empty = [ label "#empty" . eol ]
 

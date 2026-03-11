@@ -67,6 +67,7 @@ struct _virLockManagerSanlockDriver {
     unsigned int hostID;
     bool autoDiskLease;
     char *autoDiskLeasePath;
+    bool checkDiskLeaseOwner;
     unsigned int io_timeout;
 
     /* under which permissions does sanlock run */
@@ -145,6 +146,10 @@ virLockManagerSanlockLoadConfig(virLockManagerSanlockDriver *driver,
 
     driver->requireLeaseForDisks = !driver->autoDiskLease;
     if (virConfGetValueBool(conf, "require_lease_for_disks", &driver->requireLeaseForDisks) < 0)
+        return -1;
+
+    if (virConfGetValueBool(conf, "check_disk_lease_owner",
+                            &driver->checkDiskLeaseOwner) < 0)
         return -1;
 
     if (virConfGetValueUInt(conf, "io_timeout", &driver->io_timeout) < 0)
@@ -839,6 +844,72 @@ virLockManagerSanlockRegisterKillscript(int sock,
     return 0;
 }
 
+static int virLockManagerSanlockCheckOwner(virLockManagerSanlockDriver *driver,
+                                           virLockManagerSanlockPrivate *priv)
+{
+    char lvb[VIR_UUID_STRING_BUFLEN] = {0};
+    char vm_uuidstr[VIR_UUID_STRING_BUFLEN];
+    int rv;
+    size_t i;
+
+    if (!driver->checkDiskLeaseOwner)
+        return 0;
+
+    virUUIDFormat(priv->vm_uuid, vm_uuidstr);
+
+    for (i = 0; i < priv->res_count; i++) {
+        memset(lvb, 0, sizeof(lvb));
+
+        rv = sanlock_get_lvb(0, priv->res_args[i], lvb, sizeof(lvb) - 1);
+        if (rv < 0) {
+            /* Failed to read LVB, treat as "legacy" lease
+             * without ownership tracking and skip the check.
+             */
+            VIR_DEBUG("Failed to read LVB, skipping ownership check");
+            continue;
+        }
+
+        if (lvb[0] == '\0') {
+            VIR_DEBUG("Writing VM UUID to empty LVB");
+            /* Empty LVB: this lease does not yet have an owner recorded.  Write
+             * the domain's UUID so that subsequent acquire attempts by other
+             * domains will be rejected. This handles the auto_disk_leases case
+             * where lease files are created by libvirt. rather
+             */
+            if ((rv = sanlock_set_lvb(0, priv->res_args[i], vm_uuidstr,
+                                      sizeof(vm_uuidstr))) < 0) {
+                g_autofree char *err = NULL;
+                if (virLockManagerSanlockError(rv, &err)) {
+                    virReportError(VIR_ERR_INTERNAL_ERROR,
+                                   _("Failed to set LVB for lease %1$s: %2$s"),
+                                   priv->res_args[i]->disks[0].path, NULLSTR(err));
+                } else {
+                    virReportSystemError(-rv,
+                                         _("Failed to set LVB for lease %1$s"),
+                                         priv->res_args[i]->disks[0].path);
+                }
+                return -1;
+            }
+            continue;
+        }
+
+        VIR_DEBUG("Comparing LVB UUID '%s' to VM UUID '%s'", lvb, vm_uuidstr);
+        if (STRNEQ(lvb, vm_uuidstr)) {
+            /*
+             * LVB contains a different domain UUID. This lease
+             * was provisioned for another domain and must not
+             * be acquired by this one.
+             */
+            virReportError(VIR_ERR_RESOURCE_BUSY,
+                           _("Disk lease '%1$s' is not owned by domain with UUID '%2$s'"),
+                           priv->res_args[i]->disks[0].path, vm_uuidstr);
+            return -1;
+        }
+    }
+    return 0;
+}
+
+
 static int virLockManagerSanlockAcquire(virLockManager *lock,
                                         const char *state,
                                         unsigned int flags,
@@ -934,7 +1005,8 @@ static int virLockManagerSanlockAcquire(virLockManager *lock,
 
     if (!(flags & VIR_LOCK_MANAGER_ACQUIRE_REGISTER_ONLY)) {
         VIR_DEBUG("Acquiring object %u", priv->res_count);
-        if ((rv = sanlock_acquire(sock, priv->vm_pid, 0,
+        if ((rv = sanlock_acquire(sock, priv->vm_pid,
+                                  driver->checkDiskLeaseOwner ? SANLK_ACQUIRE_LVB : 0,
                                   priv->res_count, priv->res_args,
                                   opt)) < 0) {
             char *err = NULL;
@@ -949,6 +1021,9 @@ static int virLockManagerSanlockAcquire(virLockManager *lock,
             }
             goto error;
         }
+
+        if (virLockManagerSanlockCheckOwner(driver, priv) < 0)
+            goto error;
     }
 
     VIR_FREE(opt);
