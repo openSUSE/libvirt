@@ -222,9 +222,9 @@
   <flag name='query-block-flat'/>
   <flag name='amd-iommu.xtsup'/>
   <flag name='blockdev-mirror.target-is-zero'/>
-  <version>10002050</version>
+  <version>11000000</version>
   <microcodeVersion>43100286</microcodeVersion>
-  <package>v10.2.0-2062-g084a6c6e73</package>
+  <package>v11.0.0</package>
   <arch>x86_64</arch>
   <hostCPU type='kvm' model='base' migratability='yes'>
     <property name='avx-ne-convert' type='boolean' value='false'/>
@@ -242,7 +242,6 @@
     <property name='arat' type='boolean' value='true' migratable='yes'/>
     <property name='vmx-page-walk-4' type='boolean' value='false'/>
     <property name='vmx-page-walk-5' type='boolean' value='false'/>
-    <property name='amx-complex-mirror' type='boolean' value='false'/>
     <property name='gfni' type='boolean' value='true' migratable='yes'/>
     <property name='ibrs-all' type='boolean' value='false'/>
     <property name='vmx-desc-exit' type='boolean' value='false'/>
@@ -280,7 +279,6 @@
     <property name='vmx-true-ctls' type='boolean' value='false'/>
     <property name='prefetchi' type='boolean' value='true' migratable='yes'/>
     <property name='vmx-ept-execonly' type='boolean' value='false'/>
-    <property name='amx-int8-mirror' type='boolean' value='false'/>
     <property name='vmx-exit-save-efer' type='boolean' value='false'/>
     <property name='vmx-invept-all-context' type='boolean' value='false'/>
     <property name='wbnoinvd' type='boolean' value='true' migratable='yes'/>
@@ -373,6 +371,7 @@
     <property name='smep' type='boolean' value='true' migratable='yes'/>
     <property name='smap' type='boolean' value='true' migratable='yes'/>
     <property name='pfthreshold' type='boolean' value='true' migratable='yes'/>
+    <property name='amx-bf16-alias' type='boolean' value='false'/>
     <property name='vmx-invpcid-exit' type='boolean' value='false'/>
     <property name='amx-int8' type='boolean' value='false'/>
     <property name='x2apic' type='boolean' value='true' migratable='yes'/>
@@ -435,6 +434,8 @@
     <property name='kvm-mmu' type='boolean' value='false'/>
     <property name='sse4.2' type='boolean' value='true' migratable='yes'/>
     <property name='pge' type='boolean' value='true' migratable='yes'/>
+    <property name='amx-fp16-alias' type='boolean' value='false'/>
+    <property name='amx-complex-alias' type='boolean' value='false'/>
     <property name='avx512bitalg' type='boolean' value='true' migratable='yes'/>
     <property name='pdcm' type='boolean' value='false'/>
     <property name='vmx-entry-load-bndcfgs' type='boolean' value='false'/>
@@ -497,7 +498,6 @@
     <property name='vmx-apicv-register' type='boolean' value='false'/>
     <property name='tsc-adjust' type='boolean' value='true' migratable='yes'/>
     <property name='vnmi' type='boolean' value='true' migratable='yes'/>
-    <property name='amx-bf16-mirror' type='boolean' value='false'/>
     <property name='kvm-steal-time' type='boolean' value='true' migratable='yes'/>
     <property name='psdp-no' type='boolean' value='false'/>
     <property name='vmx-any-errcode' type='boolean' value='false'/>
@@ -573,14 +573,15 @@
     <property name='vmx-preemption-timer' type='boolean' value='false'/>
     <property name='clflushopt' type='boolean' value='true' migratable='yes'/>
     <property name='vmx-entry-load-pkrs' type='boolean' value='false'/>
+    <property name='amx-int8-alias' type='boolean' value='false'/>
     <property name='avx10-512' type='boolean' value='false'/>
     <property name='vmx-vnmi-pending' type='boolean' value='false'/>
     <property name='monitor' type='boolean' value='false'/>
     <property name='vmx-vintr-pending' type='boolean' value='false'/>
     <property name='avx512er' type='boolean' value='false'/>
     <property name='full-width-write' type='boolean' value='false'/>
+    <property name='gmet' type='boolean' value='false'/>
     <property name='pmm-en' type='boolean' value='false'/>
-    <property name='amx-fp16-mirror' type='boolean' value='false'/>
     <property name='pcid' type='boolean' value='false'/>
     <property name='taa-no' type='boolean' value='false'/>
     <property name='avx10' type='boolean' value='false'/>
@@ -1629,10 +1630,10 @@
     <blocker name='avx10-256'/>
     <blocker name='avx10-512'/>
     <blocker name='apx-nci-ndd-nf'/>
-    <blocker name='amx-int8-mirror'/>
-    <blocker name='amx-bf16-mirror'/>
-    <blocker name='amx-complex-mirror'/>
-    <blocker name='amx-fp16-mirror'/>
+    <blocker name='amx-int8-alias'/>
+    <blocker name='amx-bf16-alias'/>
+    <blocker name='amx-complex-alias'/>
+    <blocker name='amx-fp16-alias'/>
     <blocker name='amx-fp8'/>
     <blocker name='amx-tf32'/>
     <blocker name='amx-avx512'/>
@@ -1693,10 +1694,10 @@
     <blocker name='avx10-256'/>
     <blocker name='avx10-512'/>
     <blocker name='apx-nci-ndd-nf'/>
-    <blocker name='amx-int8-mirror'/>
-    <blocker name='amx-bf16-mirror'/>
-    <blocker name='amx-complex-mirror'/>
-    <blocker name='amx-fp16-mirror'/>
+    <blocker name='amx-int8-alias'/>
+    <blocker name='amx-bf16-alias'/>
+    <blocker name='amx-complex-alias'/>
+    <blocker name='amx-fp16-alias'/>
     <blocker name='amx-fp8'/>
     <blocker name='amx-tf32'/>
     <blocker name='amx-avx512'/>
@@ -2015,7 +2016,6 @@
     <property name='arat' type='boolean' value='true' migratable='yes'/>
     <property name='vmx-page-walk-4' type='boolean' value='false'/>
     <property name='vmx-page-walk-5' type='boolean' value='false'/>
-    <property name='amx-complex-mirror' type='boolean' value='false'/>
     <property name='gfni' type='boolean' value='false'/>
     <property name='ibrs-all' type='boolean' value='false'/>
     <property name='vmx-desc-exit' type='boolean' value='false'/>
@@ -2053,7 +2053,6 @@
     <property name='vmx-true-ctls' type='boolean' value='false'/>
     <property name='prefetchi' type='boolean' value='false'/>
     <property name='vmx-ept-execonly' type='boolean' value='false'/>
-    <property name='amx-int8-mirror' type='boolean' value='false'/>
     <property name='vmx-exit-save-efer' type='boolean' value='false'/>
     <property name='vmx-invept-all-context' type='boolean' value='false'/>
     <property name='wbnoinvd' type='boolean' value='true' migratable='yes'/>
@@ -2146,6 +2145,7 @@
     <property name='smep' type='boolean' value='true' migratable='yes'/>
     <property name='smap' type='boolean' value='true' migratable='yes'/>
     <property name='pfthreshold' type='boolean' value='false'/>
+    <property name='amx-bf16-alias' type='boolean' value='false'/>
     <property name='vmx-invpcid-exit' type='boolean' value='false'/>
     <property name='amx-int8' type='boolean' value='false'/>
     <property name='x2apic' type='boolean' value='true' migratable='yes'/>
@@ -2208,6 +2208,8 @@
     <property name='kvm-mmu' type='boolean' value='false'/>
     <property name='sse4.2' type='boolean' value='true' migratable='yes'/>
     <property name='pge' type='boolean' value='true' migratable='yes'/>
+    <property name='amx-fp16-alias' type='boolean' value='false'/>
+    <property name='amx-complex-alias' type='boolean' value='false'/>
     <property name='avx512bitalg' type='boolean' value='false'/>
     <property name='pdcm' type='boolean' value='false'/>
     <property name='vmx-entry-load-bndcfgs' type='boolean' value='false'/>
@@ -2270,7 +2272,6 @@
     <property name='vmx-apicv-register' type='boolean' value='false'/>
     <property name='tsc-adjust' type='boolean' value='false'/>
     <property name='vnmi' type='boolean' value='false'/>
-    <property name='amx-bf16-mirror' type='boolean' value='false'/>
     <property name='kvm-steal-time' type='boolean' value='false'/>
     <property name='psdp-no' type='boolean' value='false'/>
     <property name='vmx-any-errcode' type='boolean' value='false'/>
@@ -2346,14 +2347,15 @@
     <property name='vmx-preemption-timer' type='boolean' value='false'/>
     <property name='clflushopt' type='boolean' value='true' migratable='yes'/>
     <property name='vmx-entry-load-pkrs' type='boolean' value='false'/>
+    <property name='amx-int8-alias' type='boolean' value='false'/>
     <property name='avx10-512' type='boolean' value='false'/>
     <property name='vmx-vnmi-pending' type='boolean' value='false'/>
     <property name='monitor' type='boolean' value='true' migratable='yes'/>
     <property name='vmx-vintr-pending' type='boolean' value='false'/>
     <property name='avx512er' type='boolean' value='false'/>
     <property name='full-width-write' type='boolean' value='false'/>
+    <property name='gmet' type='boolean' value='false'/>
     <property name='pmm-en' type='boolean' value='false'/>
-    <property name='amx-fp16-mirror' type='boolean' value='false'/>
     <property name='pcid' type='boolean' value='false'/>
     <property name='taa-no' type='boolean' value='false'/>
     <property name='avx10' type='boolean' value='false'/>
@@ -4332,10 +4334,10 @@
     <blocker name='avx10-256'/>
     <blocker name='avx10-512'/>
     <blocker name='apx-nci-ndd-nf'/>
-    <blocker name='amx-int8-mirror'/>
-    <blocker name='amx-bf16-mirror'/>
-    <blocker name='amx-complex-mirror'/>
-    <blocker name='amx-fp16-mirror'/>
+    <blocker name='amx-int8-alias'/>
+    <blocker name='amx-bf16-alias'/>
+    <blocker name='amx-complex-alias'/>
+    <blocker name='amx-fp16-alias'/>
     <blocker name='amx-fp8'/>
     <blocker name='amx-tf32'/>
     <blocker name='amx-avx512'/>
@@ -4410,10 +4412,10 @@
     <blocker name='avx10-256'/>
     <blocker name='avx10-512'/>
     <blocker name='apx-nci-ndd-nf'/>
-    <blocker name='amx-int8-mirror'/>
-    <blocker name='amx-bf16-mirror'/>
-    <blocker name='amx-complex-mirror'/>
-    <blocker name='amx-fp16-mirror'/>
+    <blocker name='amx-int8-alias'/>
+    <blocker name='amx-bf16-alias'/>
+    <blocker name='amx-complex-alias'/>
+    <blocker name='amx-fp16-alias'/>
     <blocker name='amx-fp8'/>
     <blocker name='amx-tf32'/>
     <blocker name='amx-avx512'/>
