@@ -123,8 +123,8 @@ vshTableRowNew(const char *arg, va_list ap)
 vshTable *
 vshTableNew(const char *arg, ...)
 {
-    vshTable *table = NULL;
-    vshTableRow *header = NULL;
+    g_autoptr(vshTable) table = NULL;
+    g_autoptr(vshTableRow) header = NULL;
     va_list ap;
 
     table = g_new0(vshTable, 1);
@@ -134,15 +134,11 @@ vshTableNew(const char *arg, ...)
     va_end(ap);
 
     if (!header)
-        goto error;
+        return NULL;
 
     VIR_APPEND_ELEMENT(table->rows, table->nrows, header);
 
-    return table;
- error:
-    vshTableRowFree(header);
-    vshTableFree(table);
-    return NULL;
+    return g_steal_pointer(&table);
 }
 
 
