@@ -33,6 +33,7 @@
 typedef struct _vshTableRow vshTableRow;
 struct _vshTableRow {
     char **cells;
+    unsigned int *flags;
     size_t ncells;
 };
 
@@ -55,6 +56,7 @@ vshTableRowFree(vshTableRow *row)
         g_free(row->cells[i]);
 
     g_free(row->cells);
+    g_free(row->flags);
     g_free(row);
 }
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(vshTableRow, vshTableRowFree);
@@ -89,6 +91,7 @@ static vshTableRow *
 vshTableRowNew(const char *arg, va_list ap)
 {
     vshTableRow *row = NULL;
+    size_t nflags = 0;
 
     if (!arg) {
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
@@ -100,10 +103,12 @@ vshTableRowNew(const char *arg, va_list ap)
 
     while (arg) {
         g_autofree char *tmp = NULL;
+        unsigned int fn = VSH_TABLE_CELL_DEFAULT;
 
         tmp = g_strdup(arg);
 
         VIR_APPEND_ELEMENT(row->cells, row->ncells, tmp);
+        VIR_APPEND_ELEMENT(row->flags, nflags, fn);
 
         arg = va_arg(ap, const char *);
     }
@@ -177,6 +182,52 @@ vshTableRowAppend(vshTable *table, const char *arg, ...)
     return 0;
 }
 
+
+/**
+ * vshTableRowAppendFlags:
+ * @table: table to append to
+ * @flags: start of the cell tuples of the row row (NULL terminated)
+ *
+ * Append new row into the @table. The number of cells in the row has
+ * to be equal to the number of cells in the table header. Each column consists
+ * of a tuple of an 'unsigned int' corresponding to bitwise-or of
+ * vshTableCellFlags and an const char * representing the value to add.
+ *
+ * Returns: 0 if succeeded, -1 if failed.
+ */
+int
+vshTableRowAppendFlags(vshTable *table,
+                       unsigned int f1,
+                       const char *c1,
+                       ...)
+{
+    g_autoptr(vshTableRow) row = g_new0(vshTableRow, 1);
+    size_t ncolumns = table->rows[0]->ncells;
+    va_list ap;
+    unsigned int fn = f1;
+    g_autofree char *cn = g_strdup(c1);
+    size_t nflags = 0;
+
+    va_start(ap, c1);
+    while (cn) {
+        VIR_APPEND_ELEMENT(row->flags, nflags, fn);
+        VIR_APPEND_ELEMENT(row->cells, row->ncells, cn);
+
+        fn = va_arg(ap, unsigned int);
+        cn = g_strdup(va_arg(ap, const char *));
+    }
+    va_end(ap);
+
+    if (ncolumns != row->ncells) {
+        virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                       _("Incorrect number of cells in a table row"));
+        return -1;
+    }
+
+    VIR_APPEND_ELEMENT(table->rows, table->nrows, row);
+
+    return 0;
+}
 
 /**
  * Function pulled from util-linux
@@ -286,7 +337,11 @@ vshTableGetColumnsWidths(vshTable *table,
                 return -1;
 
             /* include the built-in whitespace in the calculated length */
-            size += 3;
+            if (!(row->flags[j] & VSH_TABLE_CELL_SKIP_LEADING))
+                size += 1;
+
+            if (!(row->flags[j] & VSH_TABLE_CELL_SKIP_TRAILING))
+                size += 2;
 
             VIR_FREE(row->cells[j]);
             row->cells[j] = tmp;
@@ -318,13 +373,25 @@ vshTableRowPrint(vshTableRow *row,
     size_t j;
 
     for (i = 0; i < row->ncells; i++) {
-        virBufferAsprintf(buf, " %s", row->cells[i]);
+        if (!(row->flags[i] & VSH_TABLE_CELL_SKIP_LEADING))
+            virBufferAddLit(buf, " ");
 
-        if (i < (row->ncells - 1)) {
+        if (row->flags[i] & VSH_TABLE_CELL_ALIGN_RIGHT) {
             for (j = 0; j < maxwidths[i] - widths[i]; j++)
                 virBufferAddChar(buf, ' ');
-            virBufferAddLit(buf, "  ");
+            virBufferAsprintf(buf, "%s", row->cells[i]);
+        } else {
+            virBufferAsprintf(buf, "%s", row->cells[i]);
+
+            if (i < (row->ncells - 1)) {
+                for (j = 0; j < maxwidths[i] - widths[i]; j++)
+                    virBufferAddChar(buf, ' ');
+            }
         }
+
+        if (!(row->flags[i] & VSH_TABLE_CELL_SKIP_TRAILING) &&
+            i < (row->ncells - 1))
+                virBufferAddLit(buf, "  ");
     }
     virBufferAddChar(buf, '\n');
 }

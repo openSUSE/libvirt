@@ -24,6 +24,13 @@
 
 typedef struct _vshTable vshTable;
 
+typedef enum {
+    VSH_TABLE_CELL_DEFAULT = 0,
+    VSH_TABLE_CELL_SKIP_LEADING = 1 << 0,
+    VSH_TABLE_CELL_SKIP_TRAILING = 1 << 1,
+    VSH_TABLE_CELL_ALIGN_RIGHT = 1 << 2,
+} vshTableCellFlags;
+
 void
 vshTableFree(vshTable *table);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(vshTable, vshTableFree);
@@ -34,6 +41,13 @@ vshTableNew(const char *format, ...)
 
 int
 vshTableRowAppend(vshTable *table, const char *arg, ...)
+    G_GNUC_NULL_TERMINATED;
+
+int
+vshTableRowAppendFlags(vshTable *table,
+                       unsigned int f1,
+                       const char *c1,
+                       ...)
     G_GNUC_NULL_TERMINATED;
 
 void
