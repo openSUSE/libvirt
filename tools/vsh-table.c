@@ -257,7 +257,8 @@ vshTableSafeEncode(const char *s, size_t *width)
  *
  * Fill passed @maxwidths and @widths arrays with maximum number
  * of characters for columns and number of character per each
- * table cell, respectively.
+ * table cell, respectively. Both lengths include the extra whitespace for
+ * separation of columns.
  * Handle unicode strings (user must have multibyte locale)
  *
  * Return 0 in case of success, -1 otherwise.
@@ -283,6 +284,9 @@ vshTableGetColumnsWidths(vshTable *table,
             char *tmp = vshTableSafeEncode(row->cells[j], &size);
             if (!tmp)
                 return -1;
+
+            /* include the built-in whitespace in the calculated length */
+            size += 3;
 
             VIR_FREE(row->cells[j]);
             row->cells[j] = tmp;
@@ -317,8 +321,9 @@ vshTableRowPrint(vshTableRow *row,
         virBufferAsprintf(buf, " %s", row->cells[i]);
 
         if (i < (row->ncells - 1)) {
-            for (j = 0; j < maxwidths[i] - widths[i] + 2; j++)
+            for (j = 0; j < maxwidths[i] - widths[i]; j++)
                 virBufferAddChar(buf, ' ');
+            virBufferAddLit(buf, "  ");
         }
     }
     virBufferAddChar(buf, '\n');
@@ -365,7 +370,7 @@ vshTablePrint(vshTable *table, bool header)
 
         /* print dividing line  */
         for (i = 0; i < table->rows[0]->ncells; i++) {
-            for (j = 0; j < maxwidths[i] + 3; j++)
+            for (j = 0; j < maxwidths[i]; j++)
                 virBufferAddChar(&buf, '-');
         }
         virBufferAddChar(&buf, '\n');
