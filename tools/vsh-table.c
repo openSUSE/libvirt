@@ -57,6 +57,7 @@ vshTableRowFree(vshTableRow *row)
     g_free(row->cells);
     g_free(row);
 }
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(vshTableRow, vshTableRowFree);
 
 
 void
@@ -158,30 +159,26 @@ vshTableNew(const char *arg, ...)
 int
 vshTableRowAppend(vshTable *table, const char *arg, ...)
 {
-    vshTableRow *row = NULL;
+    g_autoptr(vshTableRow) row = NULL;
     size_t ncolumns = table->rows[0]->ncells;
     va_list ap;
-    int ret = -1;
 
     va_start(ap, arg);
     row = vshTableRowNew(arg, ap);
     va_end(ap);
 
     if (!row)
-        goto cleanup;
+        return -1;
 
     if (ncolumns != row->ncells) {
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
                        _("Incorrect number of cells in a table row"));
-        goto cleanup;
+        return -1;
     }
 
     VIR_APPEND_ELEMENT(table->rows, table->nrows, row);
 
-    ret = 0;
- cleanup:
-    vshTableRowFree(row);
-    return ret;
+    return 0;
 }
 
 
