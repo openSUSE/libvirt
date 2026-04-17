@@ -1,0 +1,24 @@
+ base                                         | short     |
+ base                                         | 8__chars  |
+ base                                         | bbbbbbbb  |
+ base+skip_leading                            |short      |
+ base+skip_leading                            |8__chars   |
+ base+skip_leading                            |bbbbbbbbb  |
+ base+skip_trailing                           | short     |
+ base+skip_trailing                           | 8__chars  |
+ base+skip_trailing                           | bbbbbbbbbb|
+ base+skip_leading+skip_trailing              |short      |
+ base+skip_leading+skip_trailing              |8__chars   |
+ base+skip_leading+skip_trailing              |bbbbbbbbbbb|
+ base+align_right                             |    short  |
+ base+align_right                             | 8__chars  |
+ base+align_right                             | bbbbbbbb  |
+ base+skip_leading+align_right                |    short  |
+ base+skip_leading+align_right                | 8__chars  |
+ base+skip_leading+align_right                |bbbbbbbbb  |
+ base+skip_trailing+align_right               |      short|
+ base+skip_trailing+align_right               |   8__chars|
+ base+skip_trailing+align_right               | bbbbbbbbbb|
+ base+skip_leading+skip_trailing+align_right  |      short|
+ base+skip_leading+skip_trailing+align_right  |   8__chars|
+ base+skip_leading+skip_trailing+align_right  |bbbbbbbbbbb|

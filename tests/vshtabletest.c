@@ -316,6 +316,71 @@ testNTables(const void *opaque G_GNUC_UNUSED)
     return 0;
 }
 
+
+static int
+testRowsWithFlags(const void *opaque G_GNUC_UNUSED)
+{
+    g_autoptr(vshTable) t = vshTableNew("comment", "|", "content", "|", NULL);
+    g_autofree char *act  = NULL;
+    unsigned int fl;
+    unsigned int maxfl = VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING | VSH_TABLE_CELL_ALIGN_RIGHT;
+
+    for (fl = 0; fl <= maxfl; fl++) {
+        size_t maxlen = 8;
+        g_auto(virBuffer) b = VIR_BUFFER_INITIALIZER;
+        g_auto(virBuffer) n = VIR_BUFFER_INITIALIZER;
+        size_t i;
+
+        virBufferAddLit(&n, "base");
+
+        if (fl & VSH_TABLE_CELL_SKIP_LEADING) {
+            maxlen += 1;
+            virBufferAddLit(&n, "+skip_leading");
+        }
+
+        if (fl & VSH_TABLE_CELL_SKIP_TRAILING) {
+            maxlen += 2;
+            virBufferAddLit(&n, "+skip_trailing");
+        }
+
+        if (fl & VSH_TABLE_CELL_ALIGN_RIGHT) {
+            virBufferAddLit(&n, "+align_right");
+        }
+
+        for (i = 0; i < maxlen; i++)
+            virBufferAddChar(&b, 'b');
+
+        vshTableRowAppendFlags(t,
+                               VSH_TABLE_CELL_DEFAULT, virBufferCurrentContent(&n),
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, "|",
+                               fl, "short",
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, "|",
+                               0, NULL);
+
+        vshTableRowAppendFlags(t,
+                               VSH_TABLE_CELL_DEFAULT, virBufferCurrentContent(&n),
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, "|",
+                               fl, "8__chars",
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, "|",
+                               0, NULL);
+
+        vshTableRowAppendFlags(t,
+                               VSH_TABLE_CELL_DEFAULT, virBufferCurrentContent(&n),
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, "|",
+                               fl, virBufferCurrentContent(&b),
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, "|",
+                               0, NULL);
+    }
+
+    act = vshTablePrintToString(t, false);
+
+    if (virTestCompareToFile(act, abs_srcdir "/vshtabletestdata/testRowsWithFlags.out") < 0)
+        return -1;
+
+    return 0;
+}
+
+
 static int
 mymain(void)
 {
@@ -355,6 +420,9 @@ mymain(void)
         ret = -1;
 
     if (virTestRun("testNTables", testNTables, NULL) < 0)
+        ret = -1;
+
+    if (virTestRun("testRowsWithFlags", testRowsWithFlags, NULL) < 0)
         ret = -1;
 
     return ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
