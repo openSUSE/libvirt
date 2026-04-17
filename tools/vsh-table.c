@@ -92,7 +92,7 @@ vshTableRowNew(const char *arg, va_list ap)
     if (!arg) {
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
                        _("Table row cannot be empty"));
-        goto error;
+        return NULL;
     }
 
     row = g_new0(vshTableRow, 1);
@@ -108,10 +108,6 @@ vshTableRowNew(const char *arg, va_list ap)
     }
 
     return row;
-
- error:
-    vshTableRowFree(row);
-    return NULL;
 }
 
 
