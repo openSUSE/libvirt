@@ -33,6 +33,7 @@
 #include "virfile.h"
 #include "virenum.h"
 #include "virsh-util.h"
+#include "vsh-table.h"
 
 /*
  * "capabilities" command
@@ -889,6 +890,8 @@ cmdNodeMemStats(vshControl *ctl, const vshCmd *cmd)
     int cellNum = VIR_NODE_MEMORY_STATS_ALL_CELLS;
     g_autofree virNodeMemoryStatsPtr params = NULL;
     virshControl *priv = ctl->privData;
+    g_autoptr(vshTable) table = vshTableNew("field", ":", "value", NULL);
+    g_autofree char *tblstr = NULL;
 
     if (vshCommandOptInt(ctl, cmd, "cell", &cellNum) < 0)
         return false;
@@ -912,8 +915,18 @@ cmdNodeMemStats(vshControl *ctl, const vshCmd *cmd)
         return false;
     }
 
-    for (i = 0; i < nparams; i++)
-        vshPrint(ctl, "%-7s: %20llu KiB\n", params[i].field, params[i].value);
+    for (i = 0; i < nparams; i++) {
+        g_autofree char *val = g_strdup_printf("%llu KiB", params[i].value);
+
+        vshTableRowAppendFlags(table,
+                               VSH_TABLE_CELL_SKIP_LEADING | VSH_TABLE_CELL_SKIP_TRAILING, params[i].field,
+                               VSH_TABLE_CELL_SKIP_LEADING, ":",
+                               VSH_TABLE_CELL_ALIGN_RIGHT, val,
+                               0, NULL);
+    }
+
+    tblstr = vshTablePrintToString(table, false);
+    vshPrint(ctl, "%s", tblstr);
 
     return true;
 }
