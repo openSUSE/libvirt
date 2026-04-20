@@ -130,14 +130,6 @@ foreach name : libvirt_conf_files
   set_variable(name['virtd'].underscorify(), tmp)
 endforeach
 
-libvirtd_socket_unit_files = [
-  'libvirtd.socket',
-  'libvirtd-ro.socket',
-  'libvirtd-admin.socket',
-  'libvirtd-tcp.socket',
-  'libvirtd-tls.socket',
-]
-
 logrotate_files = [
   'libvirtd.qemu',
   'libvirtd.lxc',
