@@ -134,8 +134,13 @@ logrotate_files = [
   'libvirtd.qemu',
   'libvirtd.lxc',
   'libvirtd.libxl',
-  'libvirtd',
 ]
+
+if conf.has('WITH_MONOLITHIC_LIBVIRTD')
+  logrotate_files += [
+    'libvirtd',
+  ]
+endif
 
 if conf.has('WITH_REMOTE')
   remote_driver_lib = static_library(
@@ -176,47 +181,49 @@ if conf.has('WITH_REMOTE')
   if conf.has('WITH_LIBVIRTD')
     guest_unit_files += files('virt-guest-shutdown.target')
 
-    virt_daemons += {
-      'name': 'libvirtd',
-      'c_args': [
-        '-DSOCK_PREFIX="libvirt"',
-        '-DDAEMON_NAME="libvirtd"',
-        '-DWITH_IP',
-        '-DLIBVIRTD',
-      ],
-    }
+    if conf.has('WITH_MONOLITHIC_LIBVIRTD')
+      virt_daemons += {
+        'name': 'libvirtd',
+        'c_args': [
+          '-DSOCK_PREFIX="libvirt"',
+          '-DDAEMON_NAME="libvirtd"',
+          '-DWITH_IP',
+          '-DLIBVIRTD',
+        ],
+      }
 
-    virt_daemon_confs += {
-      'name': 'libvirtd',
-      'with_ip': true,
-    }
+      virt_daemon_confs += {
+        'name': 'libvirtd',
+        'with_ip': true,
+      }
 
-    virt_daemon_units += {
-      'service': 'libvirtd',
-      'name': 'legacy monolithic',
-      'service_in': files('libvirtd.service.in'),
-      'service_extra_in': [
-        files('libvirtd.service.extra.in'),
-        systemd_service_limitnofile_extra_in,
-        systemd_service_tasksmax_extra_in,
-        systemd_service_limitmemlock_extra_in,
-      ],
-      'sockets': [ 'main', 'ro', 'admin', 'tcp', 'tls' ],
-      'socket_in': files('libvirtd.socket.in'),
-      'socket_ro_in': files('libvirtd-ro.socket.in'),
-      'socket_admin_in': files('libvirtd-admin.socket.in'),
-      'socket_tcp_in': files('libvirtd-tcp.socket.in'),
-      'socket_tls_in': files('libvirtd-tls.socket.in'),
-      'socket_extra_in': [
-        files('libvirtd.socket.extra.in'),
-      ],
-    }
+      virt_daemon_units += {
+        'service': 'libvirtd',
+        'name': 'legacy monolithic',
+        'service_in': files('libvirtd.service.in'),
+        'service_extra_in': [
+          files('libvirtd.service.extra.in'),
+          systemd_service_limitnofile_extra_in,
+          systemd_service_tasksmax_extra_in,
+          systemd_service_limitmemlock_extra_in,
+        ],
+        'sockets': [ 'main', 'ro', 'admin', 'tcp', 'tls' ],
+        'socket_in': files('libvirtd.socket.in'),
+        'socket_ro_in': files('libvirtd-ro.socket.in'),
+        'socket_admin_in': files('libvirtd-admin.socket.in'),
+        'socket_tcp_in': files('libvirtd-tcp.socket.in'),
+        'socket_tls_in': files('libvirtd-tls.socket.in'),
+        'socket_extra_in': [
+          files('libvirtd.socket.extra.in'),
+        ],
+      }
 
-    openrc_init_files += {
-      'name': 'libvirtd',
-      'in_file': files('libvirtd.init.in'),
-      'confd': files('libvirtd.confd'),
-    }
+      openrc_init_files += {
+        'name': 'libvirtd',
+        'in_file': files('libvirtd.init.in'),
+        'confd': files('libvirtd.confd'),
+      }
+    endif
 
     virt_daemons += {
       'name': 'virtproxyd',
@@ -337,7 +344,7 @@ endif
 
 # The monolithic libvirt daemon only attempts to load the
 # secrets encryption credentials if the secret driver is enabled
-if conf.has('WITH_SECRETS') and init_script == 'systemd'
+if conf.has('WITH_MONOLITHIC_LIBVIRTD') and conf.has('WITH_SECRETS') and init_script == 'systemd'
   secret_dropin_conf = configuration_data({
     'localstatedir': localstatedir,
   })

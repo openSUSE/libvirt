@@ -1,9 +1,12 @@
 apparmor_gen_profiles = [
   'usr.lib.libvirt.virt-aa-helper',
-  'usr.sbin.libvirtd',
   'usr.sbin.virtqemud',
   'usr.sbin.virtxend',
 ]
+
+if conf.has('WITH_MONOLITHIC_LIBVIRTD')
+  apparmor_gen_profiles += ['usr.sbin.libvirtd']
+endif
 
 apparmor_gen_profiles_conf = configuration_data({
   'sysconfdir': sysconfdir,

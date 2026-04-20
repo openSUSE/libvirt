@@ -734,7 +734,7 @@ if conf.has('WITH_TEST')
   ]
 endif
 
-if conf.has('WITH_LIBVIRTD')
+if conf.has('WITH_MONOLITHIC_LIBVIRTD')
   test('libvirtd fail with missing config',
     libvirtd_prog,
     args: [ '--config=no-such-conf', '--timeout=5' ],

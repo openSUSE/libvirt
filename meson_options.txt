@@ -52,6 +52,8 @@ option('udev', type: 'feature', value: 'auto', description: 'udev support')
 option('wireshark_dissector', type: 'feature', value: 'auto', description: 'wireshark support')
 option('wireshark_plugindir', type: 'string', value: '', description: 'wireshark plugins directory for use when installing wireshark plugin')
 
+# build monolithic daemon option
+option('libvirtd', type: 'feature', value: 'auto', description: 'monolithic libvirt daemon')
 
 # build driver options
 option('driver_bhyve', type: 'feature', value: 'auto', description: 'bhyve driver')

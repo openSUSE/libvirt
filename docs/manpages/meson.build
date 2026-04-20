@@ -23,7 +23,7 @@ docs_man_files = [
   { 'name': 'virt-qemu-sev-validate', 'section': '1', 'install': conf.has('WITH_QEMU') },
 
   { 'name': 'libvirt-guests', 'section': '8', 'install': conf.has('WITH_LIBVIRTD') },
-  { 'name': 'libvirtd', 'section': '8', 'install': conf.has('WITH_LIBVIRTD') },
+  { 'name': 'libvirtd', 'section': '8', 'install': conf.has('WITH_MONOLITHIC_LIBVIRTD') },
   { 'name': 'virt-sanlock-cleanup', 'section': '8', 'install': conf.has('WITH_SANLOCK') },
   { 'name': 'virt-ssh-helper', 'section': '8', 'install': conf.has('WITH_LIBVIRTD') },
   { 'name': 'virtbhyved', 'section': '8', 'install': conf.has('WITH_BHYVE') },
