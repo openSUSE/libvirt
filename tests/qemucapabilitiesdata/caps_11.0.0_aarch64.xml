@@ -188,9 +188,9 @@
   <flag name='uefi-vars'/>
   <flag name='query-block-flat'/>
   <flag name='blockdev-mirror.target-is-zero'/>
-  <version>10002050</version>
+  <version>11000000</version>
   <microcodeVersion>61700286</microcodeVersion>
-  <package>v10.2.0-2062-g084a6c6e73</package>
+  <package>v11.0.0</package>
   <arch>aarch64</arch>
   <hostCPU type='kvm' model='host' migratability='no'>
     <property name='sve768' type='boolean' value='false'/>
