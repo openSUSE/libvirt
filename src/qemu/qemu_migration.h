@@ -253,7 +253,8 @@ qemuMigrationSrcToFile(virDomainObj *vm,
 
 int
 qemuMigrationSrcCancelUnattended(virDomainObj *vm,
-                                 virDomainJobObj *oldJob);
+                                 virDomainJobObj *oldJob,
+                                 virDomainJobStatus migStatus);
 
 int
 qemuMigrationSrcCancel(virDomainObj *vm,

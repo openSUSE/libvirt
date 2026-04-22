@@ -7390,7 +7390,8 @@ qemuMigrationSrcToFile(virDomainObj *vm,
  */
 int
 qemuMigrationSrcCancelUnattended(virDomainObj *vm,
-                                 virDomainJobObj *oldJob)
+                                 virDomainJobObj *oldJob,
+                                 virDomainJobStatus migStatus)
 {
     bool storage = false;
     size_t i;
@@ -7398,25 +7399,35 @@ qemuMigrationSrcCancelUnattended(virDomainObj *vm,
     VIR_DEBUG("Canceling unfinished outgoing migration of domain %s",
               vm->def->name);
 
-    /* Make sure MIGRATION event handler can store the current migration state
-     * in the job.
+    /* If QEMU has already reached a terminal state during the reconnect
+     * gap, skip restoring the async job and issuing migrate_cancel: QEMU
+     * won't emit any further MIGRATION events, so the wait loop in
+     * qemuMigrationSrcCancel would block forever. The migStatus passed in
+     * comes from the query-migrate call in qemuProcessRecoverMigration,
+     * which is authoritative for the state QEMU reached while no libvirtd
+     * was attached.
      */
-    if (!vm->job->current) {
-        qemuDomainObjRestoreAsyncJob(vm, VIR_ASYNC_JOB_MIGRATION_OUT,
-                                     oldJob->phase, oldJob->asyncStarted,
-                                     VIR_DOMAIN_JOB_OPERATION_MIGRATION_OUT,
-                                     QEMU_DOMAIN_JOB_STATS_TYPE_MIGRATION,
-                                     VIR_DOMAIN_JOB_STATUS_FAILED,
-                                     VIR_JOB_NONE);
+    if (migStatus != VIR_DOMAIN_JOB_STATUS_CANCELED) {
+        /* Make sure MIGRATION event handler can store the current migration
+         * state in the job.
+         */
+        if (!vm->job->current) {
+            qemuDomainObjRestoreAsyncJob(vm, VIR_ASYNC_JOB_MIGRATION_OUT,
+                                         oldJob->phase, oldJob->asyncStarted,
+                                         VIR_DOMAIN_JOB_OPERATION_MIGRATION_OUT,
+                                         QEMU_DOMAIN_JOB_STATS_TYPE_MIGRATION,
+                                         VIR_DOMAIN_JOB_STATUS_FAILED,
+                                         VIR_JOB_NONE);
+        }
+
+        /* We're inside a MODIFY job and the restored MIGRATION_OUT async job is
+         * used only for processing migration events from QEMU. Thus we don't
+         * want to start a nested job for talking to QEMU.
+         */
+        qemuMigrationSrcCancel(vm, VIR_ASYNC_JOB_NONE, true);
+
+        virDomainObjEndAsyncJob(vm);
     }
-
-    /* We're inside a MODIFY job and the restored MIGRATION_OUT async job is
-     * used only for processing migration events from QEMU. Thus we don't want
-     * to start a nested job for talking to QEMU.
-     */
-    qemuMigrationSrcCancel(vm, VIR_ASYNC_JOB_NONE, true);
-
-    virDomainObjEndAsyncJob(vm);
 
     for (i = 0; i < vm->def->ndisks; i++) {
         virDomainDiskDef *disk = vm->def->disks[i];
