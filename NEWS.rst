@@ -17,6 +17,28 @@ v12.3.0 (unreleased)
 
 * **New features**
 
+  * bhyve: Add blkiotune support
+
+    The bhyve driver now supports guest I/O throttling configuration::
+
+     <blkiotune>
+       <device>
+         <path>*</path>
+         <read_iops_sec>20000</read_iops_sec>
+         <write_iops_sec>20000</write_iops_sec>
+         <read_bytes_sec>10000</read_bytes_sec>
+         <write_bytes_sec>10000</write_bytes_sec>
+       </device>
+     </blkiotune>
+
+    It uses the ``rctl(4)`` framework to apply these limits.
+
+  * bhyve: Implement ``virDomainInterfaceAddresses()`` and ``virDomainGetHostname()``
+
+    The bhyve driver now implements APIs allowing to fetch address of
+    VM's interfaces (accessible via ``virsh domifaddr``) and the hostname
+    of the VM (``virsh domhostname``).
+
 * **Improvements**
 
 * **Bug fixes**
