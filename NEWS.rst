@@ -60,6 +60,14 @@ v12.3.0 (unreleased)
     attached to a "root bus". This allows for better support on more complex
     PCI topologies.
 
+  * Add mechanism to prevent accidental shrink of device with ``virsh blockresize``
+
+    A new flag ``VIR_DOMAIN_BLOCK_RESIZE_EXTEND`` was introduced which prevents
+    accidental shrinking of the block device of the VM. The flag is exposed
+    as ``virsh blockresize --extend``.
+
+  * Expose ``MemAvailable`` field from kernel's meminfo as ``VIR_NODE_MEMORY_STATS_AVAILABLE``
+
 * **Bug fixes**
 
   * virnetdevmacvlan: Wait for udev to settle after creating macvtap
@@ -72,6 +80,8 @@ v12.3.0 (unreleased)
     time to set the ``/dev`` representation fully. This may result in various
     misconfiguration or even failed ``open()``. Therefore, libvirt waits after
     device creation for udev daemon to settle down.
+
+  * apparmor: Don't drop macvtap devices from profile on blockjobs
 
 
 v12.2.0 (2026-04-01)
