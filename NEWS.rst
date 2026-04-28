@@ -39,9 +39,32 @@ v12.3.0 (unreleased)
     VM's interfaces (accessible via ``virsh domifaddr``) and the hostname
     of the VM (``virsh domhostname``).
 
+  * hyperv: Implement ``virDomainGetGuestInfo()``
+
+    The hyperv driver now implements API for fetching guest information
+    (``virsh guestinfo``).
+
 * **Improvements**
 
+  * security: Don't error out on security labels of type='none'
+
+    Previously, libvirt reported an error if a domain with seclabel of
+    type='none' (meaning do not take this security model into account for this
+    domain) was being started and the model wasn't available (for instance, in
+    case of SELinux it was disabled at boot).
+
 * **Bug fixes**
+
+  * virnetdevmacvlan: Wait for udev to settle after creating macvtap
+
+    When starting a domain with a macvtap device (or when hotplugging one),
+    libvirt creates the device and opens its ``/dev`` representation in order
+    to set it according to the ``<interface/>`` XML (e.g. MAC address, queues,
+    etc.). But if the system is under heavy load, it might happen that after
+    the device creation the udev daemon was triggered, but did not have enough
+    time to set the ``/dev`` representation fully. This may result in various
+    misconfiguration or even failed ``open()``. Therefore, libvirt waits after
+    device creation for udev daemon to settle down.
 
 
 v12.2.0 (2026-04-01)
