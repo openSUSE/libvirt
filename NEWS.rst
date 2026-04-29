@@ -53,6 +53,13 @@ v12.3.0 (unreleased)
     domain) was being started and the model wasn't available (for instance, in
     case of SELinux it was disabled at boot).
 
+  * Allow for multiple PCI root buses, not just for a single one numbered '0'
+
+    `virPCIDeviceReset()` and `virPCIDeviceIsBehindSwitchLackingACS()` no
+    longer use a hardcoded check (e.g bus == 0 ) to determine if a device is
+    attached to a "root bus". This allows for better support on more complex
+    PCI topologies.
+
 * **Bug fixes**
 
   * virnetdevmacvlan: Wait for udev to settle after creating macvtap
