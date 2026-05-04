@@ -145,7 +145,7 @@
 
 Name:           libvirt
 URL:            https://libvirt.org/
-Version:        12.2.0
+Version:        12.3.0
 Release:        0
 Summary:        Library providing a virtualization API
 License:        LGPL-2.1-or-later
@@ -1637,6 +1637,8 @@ fi
 %{_unitdir}/virtsecretd.socket
 %{_unitdir}/virtsecretd-ro.socket
 %{_unitdir}/virtsecretd-admin.socket
+%dir %attr(0755, root, root) %{_unitdir}/libvirtd.service.d/
+%{_unitdir}/libvirtd.service.d/10-secret.conf
 %{_sbindir}/virtsecretd
 %dir %attr(0700, root, root) %{_sysconfdir}/%{name}/secrets/
 %dir %attr(0700, root, root) %{_localstatedir}/lib/%{name}/secrets/
