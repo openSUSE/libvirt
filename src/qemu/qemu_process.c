@@ -6717,8 +6717,28 @@ qemuProcessPrepareDomainNUMAPlacement(virDomainObj *vm)
     if (!virDomainDefNeedsPlacementAdvice(vm->def))
         return 0;
 
-    if (vm->def->mem.hugepages)
-        pagesz = vm->def->mem.hugepages->size;
+    /* Determine page size that will be passed to the placement advice service.
+     * Specifying multiple /domain/memoryBacking/hugepages/page elements is
+     * incompatible with numa auto placement.
+     */
+    if (vm->def->mem.nhugepages > 1) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                       "%s", _("multiple 'page' elements are incompatible with numa auto placement"));
+        return -1;
+    }
+
+    if (vm->def->mem.nhugepages == 1) {
+        /* The virDomainHugePage object will be empty if no
+         * /domain/memoryBacking/hugepages/page element is specified,
+         * in which case the system default hugepage size will be used.
+         */
+        if (vm->def->mem.hugepages[0].size == 0) {
+            if (virFileGetDefaultHugepageSize(&pagesz) < 0)
+                return -1;
+        } else {
+            pagesz = vm->def->mem.hugepages[0].size;
+        }
+    }
 
     nodeset = virNumaGetAutoPlacementAdvice(virDomainDefGetVcpus(vm->def),
                                             virDomainDefGetMemoryTotal(vm->def),

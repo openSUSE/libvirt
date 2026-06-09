@@ -3832,7 +3832,7 @@ virFileGetHugepageSize(const char *path,
 # define PROC_MEMINFO "/proc/meminfo"
 # define HUGEPAGESIZE_STR "Hugepagesize:"
 
-static int
+int
 virFileGetDefaultHugepageSize(unsigned long long *size)
 {
     g_autofree char *meminfo = NULL;
