@@ -76,6 +76,8 @@ virNumaGetAutoPlacementAdvice(unsigned short vcpus,
     }
     virCommandSetOutputBuffer(cmd, &output);
 
+    VIR_DEBUG("Querying '%s' for advisory nodeset: CPUs:MBs '%d:%llu', pagesz '%llu'",
+              cmdname, vcpus, VIR_DIV_UP(balloon, 1024), VIR_DIV_UP(pagesz, 1024));
     if (virCommandRun(cmd, NULL) < 0) {
         virReportError(VIR_ERR_OPERATION_FAILED,
                        _("Failed to query %1$s for the advisory nodeset"), cmdname);

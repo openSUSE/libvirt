@@ -318,6 +318,7 @@ struct _virHugeTLBFS {
     bool deflt;                     /* is this the default huge page size */
 };
 
+int virFileGetDefaultHugepageSize(unsigned long long *size);
 int virFileGetHugepageSize(const char *path,
                            unsigned long long *size);
 int virFileFindHugeTLBFS(virHugeTLBFS **ret_fs,
