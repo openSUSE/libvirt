@@ -197,6 +197,8 @@ BuildRequires:  xen-devel
 %if %{with_qemu}
 # For managing ACLs
 BuildRequires:  libacl-devel
+# Used by virstoragetest
+BuildRequires:  qemu-tools
 %endif
 BuildRequires:  bash-completion-devel >= 2.0
 BuildRequires:  glib2-devel >= 2.66
