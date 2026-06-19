@@ -1349,6 +1349,14 @@ int virLXCProcessStart(virLXCDriver * driver,
         vm->def->consoles[i]->info.alias = g_strdup_printf("console%zu", i);
     }
 
+    VIR_DEBUG("Setting up filesystem aliases");
+    for (i = 0; i < vm->def->nfss; i++)
+        virLXCAssignDeviceFSAlias(vm->def, vm->def->fss[i]);
+
+    VIR_DEBUG("Setting up network interface aliases");
+    for (i = 0; i < vm->def->nnets; i++)
+        virLXCAssignDeviceNetAlias(vm->def, vm->def->nets[i]);
+
     VIR_DEBUG("Setting up Interfaces");
     if (virLXCProcessSetupInterfaces(driver, vm->def, &veths) < 0)
         goto cleanup;

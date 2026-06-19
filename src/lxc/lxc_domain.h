@@ -79,3 +79,11 @@ virLXCDomainGetMachineName(virDomainDef *def, pid_t pid);
 int
 virLXCDomainSetRunlevel(virDomainObj *vm,
                         int runlevel);
+
+void
+virLXCAssignDeviceNetAlias(virDomainDef *def,
+                           virDomainNetDef *net);
+
+void
+virLXCAssignDeviceFSAlias(virDomainDef *def,
+                          virDomainFSDef *fs);

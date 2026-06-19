@@ -3502,6 +3502,9 @@ lxcDomainAttachDeviceNetLive(virLXCDriver *driver,
     if (virDomainActualNetDefValidate(net) < 0)
         return -1;
 
+    /* Assign alias to the new network interface */
+    virLXCAssignDeviceNetAlias(vm->def, net);
+
     actualType = virDomainNetGetActualType(net);
 
     switch (actualType) {
