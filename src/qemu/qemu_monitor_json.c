@@ -214,7 +214,7 @@ qemuMonitorJSONIOProcessLine(qemuMonitor *mon,
 {
     g_autoptr(virJSONValue) obj = NULL;
 
-    VIR_DEBUG("Line [%s]", line);
+    VIR_DEBUG("mon=0x%p line=[%s]", mon, line);
 
     if (!(obj = virJSONValueFromString(line)))
         return -1;
