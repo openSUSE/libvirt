@@ -79,7 +79,7 @@ VIR_LOG_INIT("qemu.qemu_monitor");
                            _("monitor must not be NULL")); \
             exit; \
         } \
-        VIR_DEBUG("mon:%p vm:%p monfd:%d", mon, mon->vm, mon->fd); \
+        VIR_DEBUG("mon=%p vm=%p(%s) monfd=%d", mon, mon->vm, mon->vm->def->name, mon->fd); \
     } while (0)
 
 /* Check monitor and return NULL on error */
