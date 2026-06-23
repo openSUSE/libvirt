@@ -1367,19 +1367,19 @@ fi
 
 %pre daemon-driver-secret
 %libvirt_daemon_systemd_pre virtsecretd
-%libvirt_daemon_systemd_pre virt-secret-init-encryption
+%service_add_pre virt-secret-init-encryption.service
 
 %post daemon-driver-secret
 %libvirt_daemon_systemd_post virtsecretd
-%libvirt_daemon_systemd_post virt-secret-init-encryption
+%service_add_post virt-secret-init-encryption.service
 
 %preun daemon-driver-secret
 %libvirt_daemon_systemd_preun virtsecretd
-%libvirt_daemon_systemd_preun virt-secret-init-encryption
+%service_del_preun virt-secret-init-encryption.service
 
 %postun daemon-driver-secret
 %libvirt_daemon_systemd_postun_restart virtsecretd
-%libvirt_daemon_systemd_postun_restart virt-secret-init-encryption
+%service_del_postun_without_restart virt-secret-init-encryption.service
 
 %pre daemon-driver-qemu
 %libvirt_daemon_systemd_pre virtqemud
