@@ -57,6 +57,7 @@
       <maxphysaddr mode='passthrough' limit='64'/>
       <feature policy='require' name='cet-ss'/>
       <feature policy='require' name='cmp_legacy'/>
+      <feature policy='require' name='eraps'/>
       <feature policy='require' name='flush-l1d'/>
       <feature policy='require' name='hypervisor'/>
       <feature policy='require' name='invtsc'/>

@@ -222,9 +222,9 @@
   <flag name='query-block-flat'/>
   <flag name='amd-iommu.xtsup'/>
   <flag name='blockdev-mirror.target-is-zero'/>
-  <version>11000050</version>
+  <version>11000090</version>
   <microcodeVersion>43100287</microcodeVersion>
-  <package>v11.0.0-1600-g5611a9268d</package>
+  <package>v11.1.0-rc0</package>
   <arch>x86_64</arch>
   <hostCPU type='kvm' model='base' migratability='yes'>
     <property name='avx-ne-convert' type='boolean' value='false'/>
@@ -628,7 +628,7 @@
     <property name='vmx-rdpmc-exit' type='boolean' value='false'/>
     <property name='vmx-mtf' type='boolean' value='false'/>
     <property name='vmx-entry-load-efer' type='boolean' value='false'/>
-    <property name='eraps' type='boolean' value='false'/>
+    <property name='eraps' type='boolean' value='true' migratable='yes'/>
     <property name='wrmsrns' type='boolean' value='false'/>
     <property name='model-id' type='string' value='AMD Ryzen 9 9950X 16-Core Processor            '/>
     <property name='sha-ni' type='boolean' value='true' migratable='yes'/>

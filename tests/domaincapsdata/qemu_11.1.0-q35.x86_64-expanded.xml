@@ -94,6 +94,7 @@
       <feature policy='require' name='cx16'/>
       <feature policy='require' name='cx8'/>
       <feature policy='require' name='de'/>
+      <feature policy='require' name='eraps'/>
       <feature policy='require' name='erms'/>
       <feature policy='require' name='f16c'/>
       <feature policy='require' name='flush-l1d'/>
