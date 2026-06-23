@@ -5357,8 +5357,21 @@ qemuBuildMonitorCommandLine(virCommand *cmd,
                                 priv->qemuCaps) < 0)
         return -1;
 
-    virCommandAddArg(cmd, "-mon");
-    virCommandAddArg(cmd, "chardev=charmonitor,id=monitor,mode=control");
+    if (virQEMUCapsGet(priv->qemuCaps, QEMU_CAPS_OBJECT_MONITOR_QMP)) {
+        g_autoptr(virJSONValue) props = NULL;
+
+        if (qemuMonitorCreateObjectProps(&props, "monitor-qmp",
+                                         "monitor",
+                                         "s:chardev", "charmonitor",
+                                         NULL) < 0)
+            return -1;
+
+        if (qemuBuildObjectCommandlineFromJSON(cmd, props) < 0)
+            return -1;
+    } else {
+        virCommandAddArg(cmd, "-mon");
+        virCommandAddArg(cmd, "chardev=charmonitor,id=monitor,mode=control");
+    }
 
     return 0;
 }
