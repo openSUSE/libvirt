@@ -767,6 +767,7 @@ VIR_ENUM_IMPL(virQEMUCaps,
 
               /* 495 */
               "blockdev-mirror.target-is-zero", /* QEMU_CAPS_BLOCKDEV_MIRROR_TARGET_IS_ZERO */
+              "object-monitor-qmp", /* QEMU_CAPS_OBJECT_MONITOR_QMP */
     );
 
 
@@ -1480,6 +1481,7 @@ struct virQEMUCapsStringFlags virQEMUCapsObjectTypes[] = {
     { "iommufd", QEMU_CAPS_OBJECT_IOMMUFD },
     { "uefi-vars-x64", QEMU_CAPS_DEVICE_UEFI_VARS },
     { "uefi-vars-sysbus", QEMU_CAPS_DEVICE_UEFI_VARS },
+    { "monitor-qmp", QEMU_CAPS_OBJECT_MONITOR_QMP },
 };
 
 
