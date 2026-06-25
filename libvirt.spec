@@ -624,7 +624,7 @@ Requires:       qemu-ovmf-x86_64
 Requires:       qemu-uefi-aarch64
 %endif
 %if %{with_numad}
-Suggests:       numa-preplace
+Recommends:     numa-preplace
 %endif
 %if %{with_nbdkit}
 Recommends:     nbdkit
