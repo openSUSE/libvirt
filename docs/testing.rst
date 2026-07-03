@@ -137,18 +137,18 @@ the default libvirt registry:
     ...
 
 Now, let's say one would want to run the ``website`` job from GitLab on Debian
-11. This is how a GitLab job specification can be referenced on ``ci/helper``'s
+13. This is how a GitLab job specification can be referenced on ``ci/helper``'s
 command line:
 
 ::
 
-    $ ci/helper run --job website debian-10
+    $ ci/helper run --job website debian-13
 
 What if you want to run an rpmbuild of libvirt on an RPM distro?
 
 ::
 
-    $ ci/helper run --job rpmbuild fedora-38
+    $ ci/helper run --job rpmbuild fedora-44
 
 Want to use your own, say alpine-edge, container image from your GitLab
 container registry?
@@ -156,7 +156,7 @@ Proceed with the following:
 
 ::
 
-    $ ci/helper run --job build --image-prefix registry.gitlab.com/<user>/libvirt/ci- alpine-edge
+    $ ci/helper run --job build --image-prefix registry.gitlab.com/<user>/libvirt/ci-alpine-edge
 
 Finally, it would be nice if one could get an interactive shell inside the
 test environment to debug potential build issues. This can be achieved with the
