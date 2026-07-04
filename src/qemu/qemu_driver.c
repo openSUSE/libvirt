@@ -19029,9 +19029,7 @@ qemuDomainRenameCallback(virDomainObj *vm,
     g_autofree char *new_dom_name = NULL;
     g_autofree char *old_dom_name = NULL;
     g_autofree char *new_dom_cfg_file = NULL;
-    g_autofree char *old_dom_cfg_file = NULL;
     g_autofree char *new_dom_autostart_link = NULL;
-    g_autofree char *old_dom_autostart_link = NULL;
     struct qemuDomainMomentWriteMetadataData data = {
         .driver = driver,
         .vm = vm,
@@ -19050,14 +19048,12 @@ qemuDomainRenameCallback(virDomainObj *vm,
     new_dom_name = g_strdup(new_name);
 
     new_dom_cfg_file = virDomainConfigFile(cfg->configDir, new_dom_name);
-    old_dom_cfg_file = virDomainConfigFile(cfg->configDir, vm->def->name);
 
     if (qemuDomainNamePathsCleanup(cfg, new_name, false) < 0)
         goto cleanup;
 
     if (vm->autostart) {
         new_dom_autostart_link = virDomainConfigFile(cfg->autostartDir, new_dom_name);
-        old_dom_autostart_link = virDomainConfigFile(cfg->autostartDir, vm->def->name);
 
         if (symlink(new_dom_cfg_file, new_dom_autostart_link) < 0) {
             virReportSystemError(errno,
