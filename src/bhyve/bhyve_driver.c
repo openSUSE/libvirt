@@ -2683,6 +2683,130 @@ bhyveDomainAuthorizedSSHKeysSet(virDomainPtr domain,
     return rv;
 }
 
+static int
+bhyveDomainRenameCallback(virDomainObj *vm,
+                          const char *new_name,
+                          unsigned int flags,
+                          void *opaque)
+{
+    struct _bhyveConn *privconn = opaque;
+    virObjectEvent *event_new = NULL;
+    virObjectEvent *event_old = NULL;
+    int ret = -1;
+    virErrorPtr err = NULL;
+    g_autofree char *new_dom_name = NULL;
+    g_autofree char *old_dom_name = NULL;
+    g_autofree char *new_dom_cfg_file = NULL;
+    g_autofree char *new_dom_autostart_link = NULL;
+
+    virCheckFlags(0, ret);
+
+    if (strchr(new_name, '/')) {
+        virReportError(VIR_ERR_XML_ERROR,
+                       _("name %1$s cannot contain '/'"), new_name);
+        return -1;
+    }
+
+    new_dom_name = g_strdup(new_name);
+
+    new_dom_cfg_file = virDomainConfigFile(BHYVE_CONFIG_DIR, new_dom_name);
+
+    if (bhyveDomainNamePathsCleanup(new_name, false) < 0)
+        goto cleanup;
+
+    if (vm->autostart) {
+        new_dom_autostart_link = virDomainConfigFile(BHYVE_AUTOSTART_DIR, new_dom_name);
+
+        if (symlink(new_dom_cfg_file, new_dom_autostart_link) < 0) {
+            virReportSystemError(errno,
+                                 _("Failed to create symlink '%1$s' to '%2$s'"),
+                                 new_dom_autostart_link, new_dom_cfg_file);
+            return -1;
+        }
+    }
+
+    /* Switch name in domain definition. */
+    old_dom_name = g_steal_pointer(&vm->def->name);
+    vm->def->name = g_steal_pointer(&new_dom_name);
+
+    if (virDomainDefSave(vm->def, privconn->xmlopt, BHYVE_CONFIG_DIR) < 0)
+        goto cleanup;
+
+    event_old = virDomainEventLifecycleNew(vm->def->id, old_dom_name, vm->def->uuid,
+                                           VIR_DOMAIN_EVENT_UNDEFINED,
+                                           VIR_DOMAIN_EVENT_UNDEFINED_RENAMED);
+    event_new = virDomainEventLifecycleNewFromObj(vm,
+                                                  VIR_DOMAIN_EVENT_DEFINED,
+                                                  VIR_DOMAIN_EVENT_DEFINED_RENAMED);
+    virObjectEventStateQueue(privconn->domainEventState, event_old);
+    virObjectEventStateQueue(privconn->domainEventState, event_new);
+    ret = 0;
+
+ cleanup:
+    if (ret < 0) {
+        if (old_dom_name) {
+            new_dom_name = vm->def->name;
+            vm->def->name = old_dom_name;
+            old_dom_name = NULL;
+        }
+
+        virErrorPreserveLast(&err);
+        bhyveDomainNamePathsCleanup(new_dom_name, true);
+    } else {
+        bhyveDomainNamePathsCleanup(old_dom_name, true);
+    }
+
+    virErrorRestore(&err);
+    return ret;
+}
+
+static int
+bhyveDomainRename(virDomainPtr domain,
+                  const char *new_name,
+                  unsigned int flags)
+{
+    struct _bhyveConn *privconn = domain->conn->privateData;
+    virDomainObj *vm = NULL;
+    int ret = -1;
+
+    virCheckFlags(0, ret);
+
+    if (!(vm = bhyveDomObjFromDomain(domain)))
+        goto cleanup;
+
+    if (virDomainRenameEnsureACL(domain->conn, vm->def) < 0)
+        goto cleanup;
+
+    if (virDomainObjBeginJob(vm, VIR_JOB_MODIFY) < 0)
+        goto cleanup;
+
+    if (!vm->persistent) {
+        virReportError(VIR_ERR_OPERATION_INVALID, "%s",
+                       _("cannot rename a transient domain"));
+        goto endjob;
+    }
+
+    if (virDomainObjGetState(vm, NULL) != VIR_DOMAIN_SHUTOFF) {
+        virReportError(VIR_ERR_OPERATION_INVALID,
+                       "%s", _("domain has to be shutoff before renaming"));
+        goto endjob;
+    }
+
+    if (virDomainObjListRename(privconn->domains, vm, new_name, flags,
+                               bhyveDomainRenameCallback, privconn) < 0)
+        goto endjob;
+
+    /* Success, domain has been renamed. */
+    ret = 0;
+
+ endjob:
+    virDomainObjEndJob(vm);
+
+ cleanup:
+    virDomainObjEndAPI(&vm);
+    return ret;
+}
+
 static virHypervisorDriver bhyveHypervisorDriver = {
     .name = "bhyve",
     .connectURIProbe = bhyveConnectURIProbe,
@@ -2760,6 +2884,7 @@ static virHypervisorDriver bhyveHypervisorDriver = {
     .domainSetUserPassword = bhyveDomainSetUserPassword, /* 12.6.0 */
     .domainAuthorizedSSHKeysGet = bhyveDomainAuthorizedSSHKeysGet, /* 12.6.0 */
     .domainAuthorizedSSHKeysSet = bhyveDomainAuthorizedSSHKeysSet, /* 12.6.0 */
+    .domainRename = bhyveDomainRename, /* 12.6.0 */
 };
 
 

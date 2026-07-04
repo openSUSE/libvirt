@@ -703,3 +703,30 @@ virBhyveDomainObjStopWorker(virDomainObj *dom)
     g_object_unref(eventThread);
     virObjectLock(dom);
 }
+
+int
+bhyveDomainNamePathsCleanup(const char *name,
+                            bool bestEffort)
+{
+    g_autofree char *cfg_file = NULL;
+    g_autofree char *autostart_link = NULL;
+
+    cfg_file = virDomainConfigFile(BHYVE_CONFIG_DIR, name);
+    autostart_link = virDomainConfigFile(BHYVE_AUTOSTART_DIR, name);
+
+    if (virFileExists(cfg_file) &&
+        unlink(cfg_file) < 0) {
+        virReportSystemError(errno, _("Failed to unlink '%1$s'"), cfg_file);
+        if (!bestEffort)
+            return -1;
+    }
+
+    if (virFileIsLink(autostart_link) == 1 &&
+        unlink(autostart_link) < 0) {
+        virReportSystemError(errno, _("Failed to unlink '%1$s'"), autostart_link);
+        if (!bestEffort)
+            return -1;
+    }
+
+    return 0;
+}
