@@ -22,6 +22,7 @@
 #include <config.h>
 
 #include <sys/param.h>
+#include <sys/module.h>
 #include <sys/linker.h>
 
 #include "virt-host-validate-bhyve.h"
@@ -62,13 +63,14 @@ int virHostValidateBhyve(void)
 
         if (STREQ(stat->name, "vmm.ko"))
             vmm_loaded = true;
-        else if (STREQ(stat->name, "if_tap.ko"))
-            if_tap_loaded = true;
         else if (STREQ(stat->name, "if_bridge.ko"))
             if_bridge_loaded = true;
         else if (STREQ(stat->name, "nmdm.ko"))
             nmdm_loaded = true;
     }
+
+    if (modfind("if_tuntap") > 0)
+        if_tap_loaded = true;
 
     MODULE_STATUS_FAIL(vmm, "will not be able to start VMs");
     MODULE_STATUS_WARN(if_tap, "networking will not work");
