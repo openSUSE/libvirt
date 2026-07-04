@@ -55,6 +55,7 @@ int virHostValidateBhyve(void)
     bool if_tap_loaded = false;
     bool if_bridge_loaded = false;
     bool nmdm_loaded = false;
+    bool pf_loaded = false;
 
     for (fileid = kldnext(0); fileid > 0; fileid = kldnext(fileid)) {
         stat->version = sizeof(struct kld_file_stat);
@@ -67,6 +68,8 @@ int virHostValidateBhyve(void)
             if_bridge_loaded = true;
         else if (STREQ(stat->name, "nmdm.ko"))
             nmdm_loaded = true;
+        else if (STREQ(stat->name, "pf.ko"))
+            pf_loaded = true;
     }
 
     if (modfind("if_tuntap") > 0)
@@ -74,6 +77,7 @@ int virHostValidateBhyve(void)
 
     MODULE_STATUS_FAIL(vmm, "will not be able to start VMs");
     MODULE_STATUS_WARN(if_tap, "networking will not work");
+    MODULE_STATUS_WARN(pf, "pf firewall backend will not work");
     MODULE_STATUS_WARN(if_bridge, "bridged networking will not work");
     MODULE_STATUS_WARN(nmdm, "nmdm console will not work");
 
