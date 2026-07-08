@@ -1339,6 +1339,11 @@ get_files(vahControl * ctl)
                 virBufferAddLit(&buf, "  \"/etc/pki/nssdb/{,*}\" rk,\n");
                 break;
             case VIR_DOMAIN_SMARTCARD_TYPE_HOST_CERTIFICATES:
+                if (strpbrk(sc_db, "\"\n\r")) {
+                    vah_error(ctl, 0,
+                              _("smartcard database path contains invalid characters"));
+                    return -1;
+                }
                 virBufferAsprintf(&buf, "  \"%s/{,*}\" rk,\n", sc_db);
                 break;
             /*
