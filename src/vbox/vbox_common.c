@@ -2252,6 +2252,7 @@ vboxStartMachine(virDomainPtr dom, int maxDomID, IMachine *machine)
         VBOX_UTF8_TO_UTF16(displayutf8, &env);
         VIR_FREE(displayutf8);
         VIR_FREE(guiDisplay);
+        VIR_FREE(sdlDisplay);
 
         VBOX_UTF8_TO_UTF16(sessType, &sessionType);
     } else if (vrdpPresent) {
