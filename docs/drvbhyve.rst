@@ -11,8 +11,8 @@ recommended to use the
 `latest supported release <https://www.freebsd.org/releases/>`__
 to make sure all new features of bhyve are supported.
 In order to enable bhyve on your FreeBSD host, you'll need
-to load the ``vmm`` kernel module. Additionally, ``if_tap`` and ``if_bridge``
-modules should be loaded for networking support. Also, :since:`since 3.2.0` the
+to load the ``vmm`` kernel module. Additionally, ``if_tap``, ``if_bridge``,
+and ``pf`` modules should be loaded for networking support. Also, :since:`since 3.2.0` the
 ``virt-host-validate(1)`` supports the bhyve host validation and could be used
 like this:
 
@@ -21,6 +21,7 @@ like this:
    $ virt-host-validate bhyve
     BHYVE: Checking for vmm module                                              : PASS
     BHYVE: Checking for if_tap module                                           : PASS
+    BHYVE: Checking for pf module                                               : PASS
     BHYVE: Checking for if_bridge module                                        : PASS
     BHYVE: Checking for nmdm module                                             : PASS
    $
