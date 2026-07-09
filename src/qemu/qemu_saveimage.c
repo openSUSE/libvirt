@@ -280,6 +280,12 @@ qemuSaveImageReadHeader(int fd, virQEMUSaveData **ret_data)
         return -1;
     }
 
+    if (header->cookieOffset > header->data_len) {
+        virReportError(VIR_ERR_OPERATION_FAILED, "%s",
+                       _("invalid save image header: cookie offset exceeds data length"));
+        return -1;
+    }
+
     if (header->cookieOffset)
         xml_len = header->cookieOffset;
     else
@@ -287,7 +293,7 @@ qemuSaveImageReadHeader(int fd, virQEMUSaveData **ret_data)
 
     cookie_len = header->data_len - xml_len;
 
-    data->xml = g_new0(char, xml_len);
+    data->xml = g_new0(char, xml_len + 1);
 
     if (saferead(fd, data->xml, xml_len) != xml_len) {
         virReportError(VIR_ERR_OPERATION_FAILED,
