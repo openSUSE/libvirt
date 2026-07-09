@@ -466,10 +466,14 @@ qcow2GetExtensions(virStorageSource *meta,
 
     g_clear_pointer(&meta->dataFileRaw, g_free);
 
-    if (version == 2)
+    if (version == 2) {
         extension_start = QCOW2_HDR_TOTAL_SIZE;
-    else
+    } else {
+        if (buf_size < QCOW2v3_HDR_SIZE + 4)
+            return -1;
+
         extension_start = virReadBufInt32BE(buf + QCOW2v3_HDR_SIZE);
+    }
 
     /*
      * QCow2 header extensions are stored directly after the header before
