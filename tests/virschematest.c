@@ -301,9 +301,18 @@ static const struct testSchemaEntry schemaInterface[] = {
     { .dir = "tests/interfaceschemadata" },
 };
 
+/* skip tests with completely broken XML */
+static const char *skip_networkxmlconfdata[] = {
+    "nat-network-dns-srv-record-domain-newline.xml",
+    "nat-network-dns-srv-record-target-newline.xml",
+    "nat-network-dns-txt-recor-record-newline.xml",
+    NULL,
+};
+
 static const struct testSchemaEntry schemaNetwork[] = {
     { .dir = "src/network" },
-    { .dir = "tests/networkxmlconfdata" },
+    { .dir = "tests/networkxmlconfdata",
+      .skip = skip_networkxmlconfdata },
     { .dir = "examples/xml/test/",
       .dirRegex = "testnet.*" },
     { .dir = "tests/networkxml2xmlupdateout" },

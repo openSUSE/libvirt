@@ -323,7 +323,10 @@ mymain(void)
     DO_TEST("netboot-proxy-network");
     DO_TEST("netboot-tftp");
     DO_TEST("nat-network-dns-txt-record");
+    DO_TEST_PARSE_ERROR("nat-network-dns-txt-record-newline");
     DO_TEST("nat-network-dns-srv-record");
+    DO_TEST_PARSE_ERROR("nat-network-dns-srv-record-domain-newline");
+    DO_TEST_PARSE_ERROR("nat-network-dns-srv-record-target-newline");
     DO_TEST("nat-network-dns-srv-records");
     DO_TEST("nat-network-dns-srv-record-minimal");
     DO_TEST("nat-network-dns-hosts");

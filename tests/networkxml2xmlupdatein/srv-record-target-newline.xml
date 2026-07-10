@@ -1,0 +1,1 @@
+<srv service='ldap' protocol='tcp' target='server.example.com&#10;dhcp-script=/tmp/payload'/>
