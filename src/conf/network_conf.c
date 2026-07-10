@@ -792,6 +792,10 @@ virNetworkDNSSrvDefParseXML(const char *networkName,
     def->domain = virXMLPropString(node, "domain");
     def->target = virXMLPropString(node, "target");
 
+    if (virNetworkDNSDefCheckLineBreaks("SRV", "domain", def->domain) < 0 ||
+        virNetworkDNSDefCheckLineBreaks("SRV", "target", def->target) < 0)
+        goto error;
+
     ret = virXPathUInt("string(./@port)", ctxt, &def->port);
     if (ret >= 0 && !def->target) {
         virReportError(VIR_ERR_XML_DETAIL,
