@@ -724,6 +724,23 @@ virNetworkDNSHostDefParseXML(const char *networkName,
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" \
     "_-+/*"
 
+
+static int
+virNetworkDNSDefCheckLineBreaks(const char *record,
+                                const char *field,
+                                const char *value)
+{
+    if (virStringHasChars(value, "\r\n")) {
+        virReportError(VIR_ERR_XML_DETAIL,
+                       _("invalid line break in DNS %1$s record %2$s attribute"),
+                       record, field);
+        return -1;
+    }
+
+    return 0;
+}
+
+
 static int
 virNetworkDNSSrvDefParseXML(const char *networkName,
                             xmlNodePtr node,
@@ -851,6 +868,9 @@ virNetworkDNSTxtDefParseXML(const char *networkName,
                        def->name, networkName);
         goto error;
     }
+
+    if (virNetworkDNSDefCheckLineBreaks("TXT", "value", def->value) < 0)
+        goto error;
 
     if (!(def->name || def->value)) {
         virReportError(VIR_ERR_XML_DETAIL,
