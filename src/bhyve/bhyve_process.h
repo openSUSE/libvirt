@@ -44,7 +44,8 @@ int virBhyveProcessStart(bhyveConn *driver,
 
 int virBhyveProcessStop(struct _bhyveConn *driver,
                         virDomainObj *vm,
-                        virDomainShutoffReason reason);
+                        virDomainShutoffReason reason,
+                        bool forceCleanup);
 
 int virBhyveProcessRestart(struct _bhyveConn *driver,
                            virDomainObj *vm);

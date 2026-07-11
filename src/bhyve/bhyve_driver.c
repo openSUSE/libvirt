@@ -1019,7 +1019,7 @@ bhyveDomainDestroyFlags(virDomainPtr dom, unsigned int flags)
     if (virDomainObjCheckActive(vm) < 0)
         goto cleanup;
 
-    ret = virBhyveProcessStop(privconn, vm, VIR_DOMAIN_SHUTOFF_DESTROYED);
+    ret = virBhyveProcessStop(privconn, vm, VIR_DOMAIN_SHUTOFF_DESTROYED, false);
     event = virDomainEventLifecycleNewFromObj(vm,
                                               VIR_DOMAIN_EVENT_STOPPED,
                                               VIR_DOMAIN_EVENT_STOPPED_DESTROYED);

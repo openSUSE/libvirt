@@ -153,7 +153,7 @@ bhyveMonitorIO(int watch, int kq, int events G_GNUC_UNUSED, void *opaque)
             virReportError(VIR_ERR_INTERNAL_ERROR,
                            _("Guest %1$s got signal %2$d and crashed"),
                            name, WTERMSIG(status));
-            virBhyveProcessStop(driver, vm, VIR_DOMAIN_SHUTOFF_CRASHED);
+            virBhyveProcessStop(driver, vm, VIR_DOMAIN_SHUTOFF_CRASHED, false);
         } else if (WIFEXITED(status)) {
             if (WEXITSTATUS(status) == 0 || mon->reboot) {
                 /* 0 - reboot */
@@ -162,11 +162,11 @@ bhyveMonitorIO(int watch, int kq, int events G_GNUC_UNUSED, void *opaque)
             } else if (WEXITSTATUS(status) < 3) {
                 /* 1 - shutdown, 2 - halt, 3 - triple fault. others - error */
                 VIR_INFO("Guest %s shut itself down; destroying domain.", name);
-                virBhyveProcessStop(driver, vm, VIR_DOMAIN_SHUTOFF_SHUTDOWN);
+                virBhyveProcessStop(driver, vm, VIR_DOMAIN_SHUTOFF_SHUTDOWN, false);
             } else {
                 VIR_INFO("Guest %s had an error and exited with status %d; destroying domain.",
                          name, WEXITSTATUS(status));
-                virBhyveProcessStop(driver, vm, VIR_DOMAIN_SHUTOFF_UNKNOWN);
+                virBhyveProcessStop(driver, vm, VIR_DOMAIN_SHUTOFF_UNKNOWN, false);
             }
         }
     }
