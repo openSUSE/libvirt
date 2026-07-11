@@ -411,7 +411,8 @@ virBhyveProcessStartImpl(struct _bhyveConn *driver,
 
     vm->def->id = vm->pid;
     virDomainObjSetState(vm, VIR_DOMAIN_RUNNING, reason);
-    priv->mon = bhyveMonitorOpen(vm, driver);
+    if ((priv->mon = bhyveMonitorOpen(vm, driver)) == NULL)
+        goto cleanup;
 
     if (virBhyveDomainObjStartWorker(vm) < 0)
         goto cleanup;
