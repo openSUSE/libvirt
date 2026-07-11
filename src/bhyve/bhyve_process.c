@@ -673,7 +673,7 @@ virBhyveProcessStop(struct _bhyveConn *driver,
     /* Destroy monitor before running the actual destroy command to prevent
      * it from detecting VM shutdown and entering this cleanup routine again */
     if ((priv != NULL) && (priv->mon != NULL))
-         bhyveMonitorClose(priv->mon);
+         g_clear_pointer(&priv->mon, bhyveMonitorClose);
 
     cmd = virBhyveProcessBuildDestroyCmd(driver, vm->def);
     if (virCommandRun(cmd, NULL) < 0) {
