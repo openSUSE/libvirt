@@ -19064,9 +19064,8 @@ qemuDomainRenameCallback(virDomainObj *vm,
     }
 
     /* Switch name in domain definition. */
-    old_dom_name = vm->def->name;
-    vm->def->name = new_dom_name;
-    new_dom_name = NULL;
+    old_dom_name = g_steal_pointer(&vm->def->name);
+    vm->def->name = g_steal_pointer(&new_dom_name);
 
     if (virDomainSnapshotForEach(vm->snapshots,
                                  qemuDomainSnapshotWriteMetadataIter,
@@ -19085,22 +19084,24 @@ qemuDomainRenameCallback(virDomainObj *vm,
                                            VIR_DOMAIN_EVENT_UNDEFINED,
                                            VIR_DOMAIN_EVENT_UNDEFINED_RENAMED);
     event_new = virDomainEventLifecycleNewFromObj(vm,
-                                              VIR_DOMAIN_EVENT_DEFINED,
-                                              VIR_DOMAIN_EVENT_DEFINED_RENAMED);
+                                                  VIR_DOMAIN_EVENT_DEFINED,
+                                                  VIR_DOMAIN_EVENT_DEFINED_RENAMED);
     virObjectEventStateQueue(driver->domainEventState, event_old);
     virObjectEventStateQueue(driver->domainEventState, event_new);
     ret = 0;
 
  cleanup:
-    if (old_dom_name && ret < 0) {
-        new_dom_name = vm->def->name;
-        vm->def->name = old_dom_name;
-        old_dom_name = NULL;
-    }
+    if (ret < 0) {
+        if (old_dom_name) {
+            new_dom_name = g_steal_pointer(&vm->def->name);
+            vm->def->name = g_steal_pointer(&old_dom_name);
+        }
 
-    if (ret < 0)
         virErrorPreserveLast(&err);
-    qemuDomainNamePathsCleanup(cfg, ret < 0 ? new_dom_name : old_dom_name, true);
+        qemuDomainNamePathsCleanup(cfg, new_dom_name, true);
+    } else {
+        qemuDomainNamePathsCleanup(cfg, old_dom_name, true);
+    }
     virErrorRestore(&err);
     return ret;
 }
