@@ -1173,7 +1173,8 @@ catchXMLError(void *ctx, const char *msg G_GNUC_UNUSED, ...)
     contextstr = virBufferContentAndReset(&buf);
 
     /* (leave buffer space for pointer + line terminator) */
-    for  (n = 0; (n<col) && (contextstr[n] != 0); n++) {
+
+    for  (n = 0; (n<col) && contextstr && contextstr[n]; n++) {
         if (contextstr[n] == '\t')
             virBufferAddChar(&buf, '\t');
         else
@@ -1184,21 +1185,36 @@ catchXMLError(void *ctx, const char *msg G_GNUC_UNUSED, ...)
 
     pointerstr = virBufferContentAndReset(&buf);
 
-    if (filename) {
-        virGenericReportError(domcode, VIR_ERR_XML_DETAIL,
-                              _("%1$s:%2$d: %3$s%4$s\n%5$s"),
-                              filename,
-                              lastError->line,
-                              lastError->message,
-                              contextstr,
-                              pointerstr);
+    if (contextstr) {
+        if (filename) {
+            virGenericReportError(domcode, VIR_ERR_XML_DETAIL,
+                                  _("%1$s:%2$d: %3$s%4$s\n%5$s"),
+                                  filename,
+                                  lastError->line,
+                                  lastError->message,
+                                  contextstr,
+                                  pointerstr);
+        } else {
+            virGenericReportError(domcode, VIR_ERR_XML_DETAIL,
+                                  _("at line %1$d: %2$s%3$s\n%4$s"),
+                                  lastError->line,
+                                  lastError->message,
+                                  contextstr,
+                                  pointerstr);
+        }
     } else {
-        virGenericReportError(domcode, VIR_ERR_XML_DETAIL,
-                              _("at line %1$d: %2$s%3$s\n%4$s"),
-                              lastError->line,
-                              lastError->message,
-                              contextstr,
-                              pointerstr);
+        if (filename) {
+            virGenericReportError(domcode, VIR_ERR_XML_DETAIL,
+                                  _("%1$s:%2$d: %3$s"),
+                                  filename,
+                                  lastError->line,
+                                  lastError->message);
+        } else {
+            virGenericReportError(domcode, VIR_ERR_XML_DETAIL,
+                                  _("at line %1$d: %2$s"),
+                                  lastError->line,
+                                  lastError->message);
+        }
     }
 }
 
