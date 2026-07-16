@@ -2135,6 +2135,31 @@ remoteDispatchProbeURI(bool readonly,
 }
 #endif /* VIRTPROXYD */
 
+static int
+remoteCheckPermittedConnURI(const char *uristr)
+{
+    g_autoptr(virURI) uri = NULL;
+
+    if (!(uri = virURIParse(uristr)))
+        return -1;
+
+    /*
+     * Use of a transport (eg "+ext") in the scheme can be used to
+     * trick the daemon into using the remote driver to connect to
+     * an arbitrary socket under the caller's control. The valid
+     * URIs from the remote driver client will never include a
+     * transport component, so always reject that attempt.
+     */
+    if (uri->scheme &&
+        strchr(uri->scheme, '+')) {
+        virReportError(VIR_ERR_OPERATION_DENIED,
+                       _("Remote URI '%1$s' is not permitted to include a transport"),
+                       uristr);
+        return -1;
+    }
+
+    return 0;
+}
 
 static int
 remoteDispatchConnectOpen(virNetServer *server G_GNUC_UNUSED,
@@ -2163,6 +2188,10 @@ remoteDispatchConnectOpen(virNetServer *server G_GNUC_UNUSED,
     }
 
     name = args->name ? *args->name : NULL;
+
+    if (name && STRNEQ(name, "") &&
+        remoteCheckPermittedConnURI(name) < 0)
+        goto cleanup;
 
     /* If this connection arrived on a readonly socket, force
      * the connection to be readonly.
