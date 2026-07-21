@@ -51,6 +51,9 @@ VIR_LOG_INIT("libvirt-qemu");
  *     libvirt is possible as a means to test new QEMU features before
  *     they have support in libvirt, but no guarantees are made to safety
  *
+ * QEMU expects the command @cmd to be in the QMP format which is documented at
+ * https://www.qemu.org/docs/master/interop/qmp-spec.html
+ *
  * If VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP is set, the command is
  * considered to be a human monitor command and libvirt will automatically
  * convert it into QMP if needed.  In that case the @result will also
@@ -122,6 +125,9 @@ virDomainQemuMonitorCommand(virDomainPtr domain, const char *cmd,
  *   - A @cmd that alters state not tracked by the current version of
  *     libvirt is possible as a means to test new QEMU features before
  *     they have support in libvirt, but no guarantees are made to safety
+ *
+ * QEMU expects the command @cmd to be in the QMP format which is documented at
+ * https://www.qemu.org/docs/master/interop/qmp-spec.html
  *
  * If VIR_DOMAIN_QEMU_MONITOR_COMMAND_HMP is set, the command is
  * considered to be a human monitor command and libvirt will automatically
