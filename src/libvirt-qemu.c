@@ -278,6 +278,11 @@ virDomainQemuAttach(virConnectPtr conn,
  * Execute an arbitrary Guest Agent command.
  *
  * Issue @cmd to the guest agent running in @domain.
+ *
+ * The QEMU guest agent expects the command @cmd to be in the QEMU Guest Agent
+ * Protocol format documented at:
+ * https://www.qemu.org/docs/master/interop/qemu-ga-ref.html
+ *
  * @timeout must be -2, -1, 0 or positive.
  * VIR_DOMAIN_QEMU_AGENT_COMMAND_BLOCK(-2): meaning to block forever waiting for
  * a result.
@@ -285,7 +290,8 @@ virDomainQemuAttach(virConnectPtr conn,
  * VIR_DOMAIN_QEMU_AGENT_COMMAND_NOWAIT(0): does not wait.
  * positive value: wait for @timeout seconds
  *
- * Returns strings if success, NULL in failure.
+ * Returns string containing the verbatim reply from the guest agent on
+ * success, NULL on failure.
  *
  * Since: 0.10.0
  */
