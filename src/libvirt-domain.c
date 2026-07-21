@@ -8989,11 +8989,11 @@ virDomainAttachDevice(virDomainPtr domain, const char *xml)
  * @flags: bitwise-OR of virDomainDeviceModifyFlags
  *
  * Attach a virtual device to a domain, using the flags parameter
- * to control how the device is attached.  VIR_DOMAIN_AFFECT_CURRENT
+ * to control how the device is attached.  VIR_DOMAIN_DEVICE_MODIFY_CURRENT
  * specifies that the device allocation is made based on current domain
- * state.  VIR_DOMAIN_AFFECT_LIVE specifies that the device shall be
+ * state.  VIR_DOMAIN_DEVICE_MODIFY_LIVE specifies that the device shall be
  * allocated to the active domain instance only and is not added to the
- * persisted domain configuration.  VIR_DOMAIN_AFFECT_CONFIG
+ * persisted domain configuration.  VIR_DOMAIN_DEVICE_MODIFY_CONFIG
  * specifies that the device shall be allocated to the persisted domain
  * configuration only.  Note that the target hypervisor must return an
  * error if unable to satisfy flags.  E.g. the hypervisor driver will
@@ -9050,7 +9050,7 @@ virDomainAttachDeviceFlags(virDomainPtr domain,
  * @xml: pointer to XML description of one device
  *
  * This is an equivalent of virDomainDetachDeviceFlags() when called with
- * @flags parameter set to VIR_DOMAIN_AFFECT_LIVE.
+ * @flags parameter set to VIR_DOMAIN_DEVICE_MODIFY_LIVE.
  *
  * See virDomainDetachDeviceFlags() for more details.
  *
@@ -9096,11 +9096,11 @@ virDomainDetachDevice(virDomainPtr domain, const char *xml)
  * @flags: bitwise-OR of virDomainDeviceModifyFlags
  *
  * Detach a virtual device from a domain, using the flags parameter
- * to control how the device is detached.  VIR_DOMAIN_AFFECT_CURRENT
+ * to control how the device is detached.  VIR_DOMAIN_DEVICE_MODIFY_CURRENT
  * specifies that the device allocation is removed based on current domain
- * state.  VIR_DOMAIN_AFFECT_LIVE specifies that the device shall be
+ * state.  VIR_DOMAIN_DEVICE_MODIFY_LIVE specifies that the device shall be
  * deallocated from the active domain instance only and is not from the
- * persisted domain configuration.  VIR_DOMAIN_AFFECT_CONFIG
+ * persisted domain configuration.  VIR_DOMAIN_DEVICE_MODIFY_CONFIG
  * specifies that the device shall be deallocated from the persisted domain
  * configuration only.  Note that the target hypervisor must return an
  * error if unable to satisfy flags.  E.g. the hypervisor driver will
@@ -9181,11 +9181,11 @@ virDomainDetachDeviceFlags(virDomainPtr domain,
  * @flags: bitwise-OR of virDomainDeviceModifyFlags
  *
  * Change a virtual device on a domain, using the flags parameter
- * to control how the device is changed.  VIR_DOMAIN_AFFECT_CURRENT
+ * to control how the device is changed.  VIR_DOMAIN_DEVICE_MODIFY_CURRENT
  * specifies that the device change is made based on current domain
- * state.  VIR_DOMAIN_AFFECT_LIVE specifies that the device shall be
+ * state.  VIR_DOMAIN_DEVICE_MODIFY_LIVE specifies that the device shall be
  * changed on the active domain instance only and is not added to the
- * persisted domain configuration. VIR_DOMAIN_AFFECT_CONFIG
+ * persisted domain configuration. VIR_DOMAIN_DEVICE_MODIFY_CONFIG
  * specifies that the device shall be changed on the persisted domain
  * configuration only.  Note that the target hypervisor must return an
  * error if unable to satisfy flags.  E.g. the hypervisor driver will
@@ -9248,8 +9248,8 @@ virDomainUpdateDeviceFlags(virDomainPtr domain,
  *
  * Detach a virtual device from a domain, using the alias to
  * specify the device. The value of @flags should be either
- * VIR_DOMAIN_AFFECT_CURRENT, or a bitwise-or of values from
- * VIR_DOMAIN_AFFECT_LIVE and VIR_DOMAIN_AFFECT_CURRENT, although
+ * VIR_DOMAIN_DEVICE_MODIFY_CURRENT, or a bitwise-or of values from
+ * VIR_DOMAIN_DEVICE_MODIFY_LIVE and VIR_DOMAIN_DEVICE_MODIFY_CONFIG, although
  * hypervisors vary in which flags are supported.
  *
  * In contrast to virDomainDetachDeviceFlags() this API is
