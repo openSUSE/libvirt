@@ -202,6 +202,9 @@ virDomainQemuMonitorCommandWithFiles(virDomainPtr domain,
  * @pid_value: the UNIX process ID of the external QEMU process
  * @flags: optional flags, currently unused
  *
+ * This API is not functional since libvirt 5.5.0 as support in the QEMU driver
+ * was removed.
+ *
  * This API is QEMU specific, so it will only work with hypervisor
  * connections to the QEMU driver.
  *
