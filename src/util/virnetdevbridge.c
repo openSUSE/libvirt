@@ -53,7 +53,8 @@ VIR_LOG_INIT("util.netdevbridge");
 static int virNetDevBridgeCmd(const char *brname,
                               u_long op,
                               void *arg,
-                              size_t argsize)
+                              size_t argsize,
+                              bool set)
 {
     struct ifdrv ifd = { 0 };
     VIR_AUTOCLOSE s = -1;
@@ -75,7 +76,7 @@ static int virNetDevBridgeCmd(const char *brname,
     ifd.ifd_len = argsize;
     ifd.ifd_data = arg;
 
-    return ioctl(s, SIOCSDRVSPEC, &ifd);
+    return ioctl(s, set ? SIOCSDRVSPEC : SIOCGDRVSPEC, &ifd);
 }
 #endif
 
@@ -693,7 +694,7 @@ int virNetDevBridgeAddPort(const char *brname,
         return -1;
     }
 
-    if (virNetDevBridgeCmd(brname, BRDGADD, &req, sizeof(req)) < 0) {
+    if (virNetDevBridgeCmd(brname, BRDGADD, &req, sizeof(req), true) < 0) {
         virReportSystemError(errno,
                              _("Unable to add bridge %1$s port %2$s"), brname, ifname);
         return -1;
@@ -759,7 +760,7 @@ int virNetDevBridgeRemovePort(const char *brname,
         return -1;
     }
 
-    if (virNetDevBridgeCmd(brname, BRDGDEL, &req, sizeof(req)) < 0) {
+    if (virNetDevBridgeCmd(brname, BRDGDEL, &req, sizeof(req), true) < 0) {
         virReportSystemError(errno,
                              _("Unable to remove bridge %1$s port %2$s"), brname, ifname);
        return -1;
@@ -883,7 +884,7 @@ int virNetDevBridgeSetSTPDelay(const char *brname,
     delay_seconds = delay_seconds < 4 ? 4 : delay_seconds;
     param.ifbrp_fwddelay = delay_seconds & 0xff;
 
-    if (virNetDevBridgeCmd(brname, BRDGSFD, &param, sizeof(param)) < 0) {
+    if (virNetDevBridgeCmd(brname, BRDGSFD, &param, sizeof(param), true) < 0) {
         virReportSystemError(errno,
                              _("Unable to set STP delay on %1$s"), brname);
         return -1;
@@ -993,6 +994,51 @@ virNetDevBridgeSetVlanFiltering(const char *brname,
                                 bool enable)
 {
     return virNetDevBridgeSet(brname, "vlan_filtering", enable ? 1 : 0, -1, NULL);
+}
+
+
+#elif defined(WITH_BSD_BRIDGE_MGMT) && defined(IFBRF_VLANFILTER)
+int
+virNetDevBridgeGetVlanFiltering(const char *brname,
+                                bool *enable)
+{
+    struct ifbrparam req;
+
+    if (virNetDevBridgeCmd(brname, BRDGGFLAGS, &req, sizeof(req), false) < 0) {
+        virReportSystemError(errno,
+                             _("Unable to get bridge %1$s flags"), brname);
+        return -1;
+    }
+
+    *enable = !!(req.ifbrp_flags & IFBRF_VLANFILTER);
+    return 0;
+}
+
+
+int
+virNetDevBridgeSetVlanFiltering(const char *brname,
+                                bool enable)
+{
+    struct ifbrparam req;
+
+    if (virNetDevBridgeCmd(brname, BRDGGFLAGS, &req, sizeof(req), false) < 0) {
+        virReportSystemError(errno,
+                             _("Unable to get bridge %1$s flag"), brname);
+        return -1;
+    }
+
+    if (enable)
+        req.ifbrp_flags |= IFBRF_VLANFILTER;
+    else
+        req.ifbrp_flags &= ~IFBRF_VLANFILTER;
+
+    if (virNetDevBridgeCmd(brname, BRDGSFLAGS, &req, sizeof(req), true) < 0) {
+        virReportSystemError(errno,
+                             _("Unable to set bridge %1$s flag"), brname);
+        return -1;
+    }
+
+    return 0;
 }
 
 
