@@ -681,10 +681,48 @@ int virNetDevBridgeAddPort(const char *brname,
                            const virNetDevVlan *virtVlan)
 {
     struct ifbreq req = { 0 };
+# if defined(BRDG_VLAN_OP_SET)
+    struct ifbif_vlan_req vlreq = { 0 };
+# endif
+
+    if (virtVlan &&
+        virtVlan->nativeMode == VIR_NATIVE_VLAN_MODE_TAGGED) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
+                       _("native tagged VLAN mode is not supported on this platform"));
+        return -1;
+    }
 
     if (virtVlan) {
+# if defined(BRDG_VLAN_OP_SET)
+        size_t i;
+
+        for (i = 0; i < virtVlan->nTags; i++) {
+            if (virtVlan->tag[i] < DOT1Q_VID_MIN ||
+                virtVlan->tag[i] > DOT1Q_VID_MAX) {
+                virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                               _("VLAN tag %1$u is not supported on this platform"),
+                               virtVlan->tag[i]);
+                return -1;
+            }
+        }
+
+        if (virtVlan->trunk) {
+            for (i = 0; i < virtVlan->nTags; i++) {
+                vlreq.bv_op = BRDG_VLAN_OP_SET;
+                strlcpy(vlreq.bv_ifname, ifname, sizeof(vlreq.bv_ifname));
+
+                if (virtVlan->tag[i] != virtVlan->nativeTag)
+                    BRVLAN_SET(&vlreq.bv_set, virtVlan->tag[i]);
+                else
+                    req.ifbr_pvid = virtVlan->tag[i];
+            }
+        } else {
+            req.ifbr_pvid = virtVlan->tag[0];
+        }
+# else
         virReportSystemError(ENOSYS, "%s", _("Not supported on this platform"));
         return -1;
+# endif /* defined(BRDG_VLAN_OP_SET) */
     }
 
     if (virStrcpyStatic(req.ifbr_ifsname, ifname) < 0) {
@@ -699,6 +737,22 @@ int virNetDevBridgeAddPort(const char *brname,
                              _("Unable to add bridge %1$s port %2$s"), brname, ifname);
         return -1;
     }
+
+# if defined(BRDG_VLAN_OP_SET)
+    if (req.ifbr_pvid != 0 &&
+        virNetDevBridgeCmd(brname, BRDGSIFPVID, &req, sizeof(req), true) < 0) {
+        virReportSystemError(errno,
+                             _("Unable to set VLAN for bridge %1$s port %2$s"), brname, ifname);
+        return -1;
+    }
+
+    if (vlreq.bv_op != 0 &&
+        virNetDevBridgeCmd(brname, BRDGSIFVLANSET, &vlreq, sizeof(vlreq), true) < 0) {
+        virReportSystemError(errno,
+                             _("Unable to set VLAN for bridge %1$s port %2$s"), brname, ifname);
+        return -1;
+    }
+# endif /* defined(BRDG_VLAN_OP_SET) */
 
     return 0;
 }
