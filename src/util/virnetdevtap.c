@@ -334,11 +334,12 @@ int virNetDevTapCreate(char **ifname,
     int s;
     struct ifreq ifr;
     int ret = -1;
+    bool created = false;
 
     if (tapfdSize > 1) {
         virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
                        _("Multiqueue devices are not supported on this system"));
-        goto cleanup;
+        return -1;
     }
 
     /* auto-generate an unused name for the new device (this
@@ -357,8 +358,11 @@ int virNetDevTapCreate(char **ifname,
     if (ioctl(s, SIOCIFCREATE2, &ifr) < 0) {
         virReportSystemError(errno, "%s",
                              _("Unable to create tap device"));
-        goto cleanup;
+        VIR_FORCE_CLOSE(s);
+        return -1;
     }
+
+    created = true;
 
     if (tapfd) {
         g_autofree char *dev_path = NULL;
@@ -378,6 +382,18 @@ int virNetDevTapCreate(char **ifname,
 
     ret = 0;
  cleanup:
+    if (ret < 0 && created) {
+        virErrorPtr err;
+
+        virErrorPreserveLast(&err);
+
+        if (tapfd)
+            VIR_FORCE_CLOSE(*tapfd);
+
+        ignore_value(virNetDevTapDelete(ifr.ifr_name, NULL));
+        virErrorRestore(&err);
+    }
+
     VIR_FORCE_CLOSE(s);
 
     return ret;
