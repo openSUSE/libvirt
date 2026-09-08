@@ -6748,7 +6748,7 @@ qemuBuildCpuCommandLine(virCommand *cmd,
 
     for (i = 0; i < def->npanics; i++) {
         if (def->panics[i]->model == VIR_DOMAIN_PANIC_MODEL_HYPERV) {
-            virBufferAddLit(&buf, ",hv-crash");
+            virBufferAddLit(&buf, ",hv-crash=on");
             break;
         }
     }
