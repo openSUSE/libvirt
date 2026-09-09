@@ -695,6 +695,16 @@ int virNetDevTapCreateInBridgePort(const char *brname,
     for (i = 0; i < tapfdSize && tapfd[i] >= 0; i++)
         VIR_FORCE_CLOSE(tapfd[i]);
 
+#if defined(VIR_NETDEV_TAP_REQUIRE_MANUAL_CLEANUP)
+    if (!(flags & VIR_NETDEV_TAP_CREATE_ALLOW_EXISTING)) {
+        virErrorPtr err;
+
+        virErrorPreserveLast(&err);
+        ignore_value(virNetDevTapDelete(*ifname, tunpath));
+        virErrorRestore(&err);
+    }
+#endif /* VIR_NETDEV_TAP_REQUIRE_MANUAL_CLEANUP */
+
     return -1;
 }
 
