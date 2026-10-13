@@ -4278,6 +4278,7 @@ qemuMigrationSrcConfirm(virQEMUDriver *driver,
 {
     qemuMigrationJobPhase phase;
     g_autoptr(virQEMUDriverConfig) cfg = virQEMUDriverGetConfig(driver);
+    virObjectEvent *event = NULL;
     int ret = -1;
 
     VIR_DEBUG("vm=%p, flags=0x%x, cancelled=%d", vm, flags, cancelled);
@@ -4324,11 +4325,15 @@ qemuMigrationSrcConfirm(virQEMUDriver *driver,
         if (!cancelled && ret == 0 && flags & VIR_MIGRATE_UNDEFINE_SOURCE) {
             virDomainDeleteConfig(cfg->configDir, cfg->autostartDir, vm);
             vm->persistent = 0;
+            event = virDomainEventLifecycleNewFromObj(vm,
+                                             VIR_DOMAIN_EVENT_UNDEFINED,
+                                             VIR_DOMAIN_EVENT_UNDEFINED_MIGRATED);
         }
         qemuDomainRemoveInactive(vm, VIR_DOMAIN_UNDEFINE_TPM, true);
     }
 
  cleanup:
+    virObjectEventStateQueue(driver->domainEventState, event);
     virDomainObjEndAPI(&vm);
     return ret;
 }
@@ -6326,6 +6331,7 @@ qemuMigrationSrcPerformJob(virQEMUDriver *driver,
                            bool v3proto)
 {
     virObjectEvent *event = NULL;
+    virObjectEvent *undefine_event = NULL;
     int ret = -1;
     virErrorPtr orig_err = NULL;
     g_autoptr(virQEMUDriverConfig) cfg = virQEMUDriverGetConfig(driver);
@@ -6417,6 +6423,9 @@ qemuMigrationSrcPerformJob(virQEMUDriver *driver,
         if (flags & VIR_MIGRATE_UNDEFINE_SOURCE) {
             virDomainDeleteConfig(cfg->configDir, cfg->autostartDir, vm);
             vm->persistent = 0;
+            undefine_event = virDomainEventLifecycleNewFromObj(vm,
+                                             VIR_DOMAIN_EVENT_UNDEFINED,
+                                             VIR_DOMAIN_EVENT_UNDEFINED_MIGRATED);
         }
         qemuDomainRemoveInactive(vm, 0, true);
     }
@@ -6425,6 +6434,7 @@ qemuMigrationSrcPerformJob(virQEMUDriver *driver,
 
  cleanup:
     virObjectEventStateQueue(driver->domainEventState, event);
+    virObjectEventStateQueue(driver->domainEventState, undefine_event);
     return ret;
 }
 
